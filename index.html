@@ -1,417 +1,1476 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
-<title>Away Game — Christian Parent’s Playbook</title>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fire Response Trainer — HHFD</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+:root {
+  --red: #d32f2f;
+  --red-dark: #8b0000;
+  --red-glow: rgba(211,47,47,0.35);
+  --amber: #ff8f00;
+  --amber-dim: rgba(255,143,0,0.15);
+  --teal: #00897b;
+  --bg: #0d0d0d;
+  --bg2: #141414;
+  --bg3: #1c1c1c;
+  --bg4: #242424;
+  --border: #2a2a2a;
+  --text: #e8e8e8;
+  --text-dim: #888;
+  --success: #2e7d32;
+  --success-bg: rgba(46,125,50,0.2);
+  --fail: #c62828;
+  --fail-bg: rgba(198,40,40,0.2);
+  --warn: #e65100;
+  --warn-bg: rgba(230,81,0,0.15);
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #f8f9fa; font-family: 'DM Sans', system-ui, sans-serif; color: #1a1a1a; line-height: 1.6; }
-button { cursor: pointer; }
-.progress-bar { height: 10px; background: #e9ecef; border-radius: 9999px; overflow: hidden; }
-.progress-fill { height: 100%; transition: width 0.5s ease; }
-.team-card { background: #fff; border: 1px solid #dee2e6; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
-.delete-btn { background: #fee2e2; color: #ef4444; border: none; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; }
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+header {
+  background: linear-gradient(135deg, #1a0000 0%, #2d0000 50%, #1a0000 100%);
+  border-bottom: 3px solid var(--red);
+  position: relative;
+  overflow: hidden;
+}
+header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(211,47,47,0.03) 20px, rgba(211,47,47,0.03) 40px);
+}
+.header-inner {
+  position: relative;
+  z-index: 1;
+  padding: 18px 20px 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.header-icon { font-size: 2.4rem; line-height: 1; filter: drop-shadow(0 0 12px rgba(255,100,0,0.7)); }
+.header-text h1 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: #fff;
+}
+.header-text p { font-size: 0.82rem; color: rgba(255,255,255,0.6); margin-top: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
+.run-counter { margin-left: auto; text-align: right; font-family: 'Barlow Condensed', sans-serif; }
+.run-counter .num { font-size: 2rem; font-weight: 800; color: var(--amber); line-height: 1; }
+.run-counter .label { font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; }
+
+.mode-bar { background: var(--bg2); border-bottom: 2px solid var(--border); display: flex; }
+.mode-btn {
+  flex: 1; padding: 13px 8px; background: none; color: var(--text-dim);
+  border: none; border-right: 1px solid var(--border);
+  cursor: pointer; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  transition: all 0.2s; position: relative;
+}
+.mode-btn:last-child { border-right: none; }
+.mode-btn.active { color: #fff; background: var(--bg3); }
+.mode-btn.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--red); }
+.mode-btn:hover { color: #fff; }
+
+.scenario-tabs {
+  background: var(--bg3); display: flex; gap: 4px; padding: 6px;
+  overflow-x: auto; border-bottom: 1px solid var(--border); scrollbar-width: none;
+}
+.scenario-tabs::-webkit-scrollbar { display: none; }
+.sc-btn {
+  flex-shrink: 0; padding: 10px 16px; background: var(--bg4); color: var(--text-dim);
+  border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase; transition: all 0.2s; white-space: nowrap;
+}
+.sc-btn.active { background: var(--red-dark); color: #fff; border-color: var(--red); box-shadow: 0 0 12px var(--red-glow); }
+.sc-btn .run-dot { display: inline-block; width: 8px; height: 8px; background: var(--amber); border-radius: 50%; margin-left: 6px; vertical-align: middle; opacity: 0; transition: opacity 0.3s; }
+.sc-btn.has-runs .run-dot { opacity: 1; }
+
+.content-wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+
+.section-label {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--red);
+  margin: 28px 0 10px; display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+h2.sc-title {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 800;
+  text-transform: uppercase; color: #fff; margin-bottom: 4px;
+}
+.sc-subtitle { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 20px; }
+
+.alert-card { background: var(--warn-bg); border: 1px solid var(--warn); border-left: 5px solid var(--warn); border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; font-size: 0.95rem; }
+.alert-card.danger { background: var(--fail-bg); border-color: var(--red); color: #ef9a9a; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media(max-width:640px){ .two-col { grid-template-columns: 1fr; } }
+
+.info-block { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+.info-block h4 { font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
+.info-block ul { list-style: none; padding: 0; }
+.info-block li { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.93rem; display: flex; align-items: flex-start; gap: 8px; }
+.info-block li:last-child { border-bottom: none; }
+.info-block li::before { content: '▸'; color: var(--red); flex-shrink: 0; font-size: 0.75rem; margin-top: 3px; }
+
+.tag { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 5px; flex-shrink: 0; }
+.tag.red { background: var(--red-dark); color: #ffcdd2; }
+.tag.amber { background: rgba(255,143,0,0.25); color: #ffcc80; }
+.tag.green { background: rgba(46,125,50,0.3); color: #a5d6a7; }
+
+.sizeup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+@media(max-width:540px) { .sizeup-grid { grid-template-columns: 1fr; } }
+.sizeup-q { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+.sizeup-q .icon { font-size: 1.3rem; flex-shrink: 0; }
+.sizeup-q .text { line-height: 1.3; }
+.sizeup-q .text strong { display: block; font-size: 0.82rem; color: var(--amber); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+
+.decision-tree { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+.dt-header { background: var(--bg4); padding: 12px 16px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--amber); border-bottom: 1px solid var(--border); }
+.dt-row { display: flex; align-items: stretch; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+.dt-row:last-child { border-bottom: none; }
+.dt-cond { background: rgba(211,47,47,0.08); padding: 10px 14px; width: 45%; display: flex; align-items: center; gap: 8px; font-weight: 600; border-right: 1px solid var(--border); }
+.dt-action { padding: 10px 14px; width: 55%; display: flex; align-items: center; color: #ccc; }
+
+.run-tracker { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+.run-tracker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.run-tracker h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
+.runs-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.run-chip { background: var(--bg4); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
+.run-chip .score { color: var(--amber); font-weight: 700; }
+.run-chip .date { color: var(--text-dim); font-size: 0.72rem; }
+.no-runs { color: var(--text-dim); font-size: 0.88rem; font-style: italic; }
+.stars-row { display: flex; gap: 4px; align-items: center; }
+.star { color: #444; font-size: 1rem; }
+.star.lit { color: var(--amber); }
+
+/* QUIZ */
+#mode-quiz, #mode-sim, #mode-sog { display: none; }
+.quiz-wrap { max-width: 700px; margin: 0 auto; padding: 20px 16px 60px; }
+.quiz-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-family: 'Barlow Condensed', sans-serif; }
+.quiz-progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 24px; overflow: hidden; }
+.quiz-progress-fill { height: 100%; background: var(--red); border-radius: 2px; transition: width 0.4s; }
+.quiz-category { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); margin-bottom: 8px; }
+.quiz-q-text { font-size: 1.2rem; font-weight: 600; margin-bottom: 24px; line-height: 1.4; }
+.quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.quiz-opt {
+  background: var(--bg3); border: 2px solid var(--border); border-radius: 10px;
+  padding: 14px 18px; cursor: pointer; font-size: 0.95rem; text-align: left; color: var(--text);
+  transition: all 0.15s; display: flex; align-items: center; gap: 12px; width: 100%; font-family: 'Barlow', sans-serif;
+}
+.quiz-opt:hover:not(.disabled) { border-color: #555; background: var(--bg4); }
+.quiz-opt.correct { border-color: #2e7d32; background: var(--success-bg); color: #a5d6a7; }
+.quiz-opt.wrong { border-color: var(--red); background: var(--fail-bg); color: #ef9a9a; }
+.quiz-opt.disabled { cursor: default; }
+.opt-letter {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--bg4); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800; font-size: 0.85rem; flex-shrink: 0;
+}
+.quiz-opt.correct .opt-letter { background: #2e7d32; border-color: #2e7d32; color: #fff; }
+.quiz-opt.wrong .opt-letter { background: var(--red); border-color: var(--red); color: #fff; }
+.quiz-explanation {
+  background: var(--bg3); border: 1px solid var(--border); border-left: 4px solid var(--amber);
+  border-radius: 8px; padding: 16px 18px; font-size: 0.93rem; line-height: 1.6; margin-bottom: 20px; display: none;
+}
+.quiz-explanation strong { color: var(--amber); display: block; margin-bottom: 4px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.quiz-nav { display: flex; justify-content: space-between; align-items: center; }
+.score-screen { text-align: center; padding: 40px 20px; }
+.score-ring { width: 130px; height: 130px; border-radius: 50%; border: 6px solid var(--border); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 2.2rem; font-weight: 800; }
+.score-ring.pass { border-color: #2e7d32; color: #81c784; }
+.score-ring.fail { border-color: var(--red); color: #ef9a9a; }
+.score-label { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; }
+.score-message { color: var(--text-dim); margin-bottom: 28px; font-size: 0.92rem; }
+
+/* SIM */
+.sim-wrap { max-width: 700px; margin: 0 auto; padding: 20px 16px 60px; }
+.sim-scene { background: linear-gradient(135deg, #1a0000, #2d0000); border: 2px solid var(--red); border-radius: 12px; padding: 22px; margin-bottom: 20px; }
+.sim-tag { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
+.sim-incident { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; font-weight: 800; text-transform: uppercase; color: #fff; margin-bottom: 10px; }
+.sim-dispatch { font-size: 0.93rem; color: #ccc; line-height: 1.5; margin-bottom: 14px; }
+.sim-variables { display: flex; flex-wrap: wrap; gap: 8px; }
+.sim-var { background: rgba(255,143,0,0.15); border: 1px solid rgba(255,143,0,0.3); border-radius: 6px; padding: 5px 10px; font-size: 0.82rem; color: #ffcc80; }
+.sim-prompt { background: var(--bg3); border: 1px solid var(--border); border-left: 4px solid var(--red); border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; }
+.sim-prompt strong { display: block; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; color: var(--red); margin-bottom: 8px; font-size: 0.85rem; }
+.sim-prompt p { font-size: 1.05rem; font-weight: 600; }
+.sim-choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.sim-choice {
+  background: var(--bg3); border: 2px solid var(--border); border-radius: 10px;
+  padding: 14px 18px; cursor: pointer; font-size: 0.95rem; text-align: left; color: var(--text);
+  transition: all 0.15s; display: flex; align-items: center; gap: 12px; width: 100%; font-family: 'Barlow', sans-serif;
+}
+.sim-choice:hover:not(.locked) { border-color: #555; }
+.sim-choice.best { border-color: #2e7d32; background: var(--success-bg); color: #a5d6a7; cursor: default; }
+.sim-choice.ok { border-color: var(--amber); background: rgba(255,143,0,0.15); color: #ffcc80; cursor: default; }
+.sim-choice.poor { border-color: var(--red); background: var(--fail-bg); color: #ef9a9a; cursor: default; }
+.sim-feedback-text { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; margin-bottom: 20px; display: none; font-size: 0.93rem; line-height: 1.6; }
+.sim-feedback-text .rationale { color: var(--text-dim); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 0.88rem; }
+
+/* SOG */
+.sog-wrap { max-width: 800px; margin: 0 auto; padding: 20px 16px 60px; }
+.sog-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 14px; display: flex; gap: 12px; align-items: flex-start; }
+.sog-badge { background: var(--red-dark); color: #ffcdd2; border-radius: 6px; padding: 4px 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; flex-shrink: 0; margin-top: 2px; }
+.sog-content { flex: 1; }
+.sog-content h4 { font-size: 0.97rem; font-weight: 700; margin-bottom: 4px; }
+.sog-content p { font-size: 0.88rem; color: var(--text-dim); line-height: 1.5; }
+.sog-del { background: none; border: 1px solid var(--border); color: var(--text-dim); border-radius: 6px; width: 34px; height: 34px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+.sog-del:hover { border-color: var(--red); color: var(--red); }
+.sog-form { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 20px; }
+.sog-form h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; color: var(--amber); }
+.form-row { margin-bottom: 12px; }
+.form-row label { display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 5px; }
+.form-row input, .form-row textarea, .form-row select {
+  width: 100%; background: var(--bg4); border: 1px solid var(--border); border-radius: 7px;
+  padding: 10px 13px; color: var(--text); font-family: 'Barlow', sans-serif; font-size: 0.93rem; outline: none; transition: border-color 0.2s;
+}
+.form-row input:focus, .form-row textarea:focus, .form-row select:focus { border-color: var(--red); }
+.form-row select option { background: var(--bg4); }
+.form-row textarea { resize: vertical; min-height: 80px; }
+
+.btn { padding: 13px 22px; border: none; border-radius: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; min-height: 48px; touch-action: manipulation; }
+.btn-red { background: var(--red); color: #fff; }
+.btn-red:hover { background: #b71c1c; }
+.btn-ghost { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--bg4); }
+.flex-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.hidden { display: none !important; }
+.mb-16 { margin-bottom: 16px; }
+
+footer { text-align: center; padding: 20px; color: var(--text-dim); font-size: 0.78rem; border-top: 1px solid var(--border); margin-top: 20px; }
+
+/* PANELS MODE */
+.panels-wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+.panels-intro { background: var(--bg3); border: 1px solid var(--border); border-left: 4px solid var(--amber); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; font-size: 0.92rem; line-height: 1.6; color: #ccc; }
+.panels-intro strong { color: var(--amber); }
+.panel-filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.panel-filter-btn { padding: 7px 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; color: var(--text-dim); font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; transition: all 0.2s; }
+.panel-filter-btn.active { background: var(--red-dark); color: #fff; border-color: var(--red); }
+.accordion { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+.accordion-header {
+  display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+  background: var(--bg3); cursor: pointer; transition: background 0.2s; user-select: none;
+  border: none; width: 100%; text-align: left; color: var(--text);
+}
+.accordion-header:hover { background: var(--bg4); }
+.accordion-header.open { background: var(--bg4); border-bottom: 1px solid var(--border); }
+.acc-brand-badge {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 9px; border-radius: 5px; flex-shrink: 0;
+}
+.acc-title-block { flex: 1; }
+.acc-title-block .panel-name { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #fff; line-height: 1; margin-bottom: 3px; }
+.acc-title-block .panel-sub { font-size: 0.8rem; color: var(--text-dim); }
+.acc-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.acc-tag { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 4px; background: var(--bg); border: 1px solid var(--border); color: var(--text-dim); }
+.acc-chevron { font-size: 0.9rem; color: var(--text-dim); flex-shrink: 0; transition: transform 0.25s; }
+.accordion-header.open .acc-chevron { transform: rotate(180deg); }
+.accordion-body { display: none; background: var(--bg2); padding: 0; }
+.accordion-body.open { display: block; }
+
+.panel-section { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.panel-section:last-child { border-bottom: none; }
+.panel-section-title {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.14em; color: var(--red); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.step-list { list-style: none; padding: 0; counter-reset: steps; }
+.step-list li {
+  display: flex; align-items: flex-start; gap: 12px; padding: 9px 0;
+  border-bottom: 1px solid var(--border); font-size: 0.92rem; line-height: 1.45;
+  counter-increment: steps;
+}
+.step-list li:last-child { border-bottom: none; }
+.step-num {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--red-dark); color: #ffcdd2;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 0.82rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.step-num.amber { background: rgba(255,143,0,0.25); color: #ffcc80; }
+.step-num.green { background: rgba(46,125,50,0.3); color: #a5d6a7; }
+
+.panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media(max-width:560px) { .panel-grid { grid-template-columns: 1fr; } }
+.panel-info-cell { background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 11px 14px; }
+.panel-info-cell .cell-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 5px; }
+.panel-info-cell .cell-value { font-size: 0.92rem; color: var(--text); line-height: 1.4; }
+
+.caution-bar { background: var(--fail-bg); border: 1px solid var(--red); border-radius: 7px; padding: 10px 14px; font-size: 0.88rem; color: #ef9a9a; margin-top: 10px; }
+.tip-bar { background: rgba(0,137,123,0.1); border: 1px solid #00695c; border-radius: 7px; padding: 10px 14px; font-size: 0.88rem; color: #80cbc4; margin-top: 10px; }
+.key-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--bg4); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 0.82rem; margin: 3px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.04em; }
+.key-chip .kc-icon { font-size: 1rem; }
+
+@media(max-width:600px) {
+  .header-text h1 { font-size: 1.3rem; }
+  .quiz-q-text { font-size: 1.05rem; }
+  .sim-incident { font-size: 1.2rem; }
+}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel" data-presets="react">
-const { useState } = React;
 
-// ─── STORAGE ──────────────────────────────────────────────────────────────────
-function load(key, fb) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fb; } catch { return fb; } }
-function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
-let _c = Date.now();
-function uid() { return "x" + (++_c).toString(36); }
+<header>
+  <div class="header-inner">
+    <div class="header-icon">🔥</div>
+    <div class="header-text">
+      <h1>Fire Response Trainer</h1>
+      <p>HHFD — Routine Call Proficiency System</p>
+    </div>
+    <div class="run-counter">
+      <div class="num" id="total-run-count">0</div>
+      <div class="label">Total Runs</div>
+    </div>
+  </div>
+</header>
 
-// ─── COLORS ───────────────────────────────────────────────────────────────────
-const C = {
-  bg0: "#f8f9fa", bg1: "#ffffff", bg2: "#f1f3f5", bg3: "#e9ecef",
-  border: "#dee2e6", borderHi: "#ff8c00",
-  text: "#1a1a1a", textSub: "#495057", textMuted: "#6c757d",
-  orange: "#ff8c00", green: "#00b36b"
-};
+<div class="mode-bar">
+  <button class="mode-btn active" onclick="setMode('learn')" id="mode-btn-learn">📋 Learn</button>
+  <button class="mode-btn" onclick="setMode('quiz')" id="mode-btn-quiz">🎯 Quiz</button>
+  <button class="mode-btn" onclick="setMode('sim')" id="mode-btn-sim">🚒 Simulate</button>
+  <button class="mode-btn" onclick="setMode('sog')" id="mode-btn-sog">📝 SOG Notes</button>
+  <button class="mode-btn" onclick="setMode('panels')" id="mode-btn-panels">🖥️ Panels</button>
+</div>
 
-// ─── VIRTUES (Complete) ───────────────────────────────────────────────────────
-const VIRTUES = {
-  L: { key:"L", label:"Love", icon:"❤️", tagline:"Others-first in a me-first culture", color:"#ff4d4d", bg:"#fff0f0", border:"#ff8c00",
-       scoreMeaning: "0=Never • 1=Rarely • 2=Sometimes • 3=Consistently puts others first",
-       strong: ["Celebrates teammates' success", "Shows genuine kindness", "Puts team above self"],
-       weak:   ["Selfish on and off the field", "Dismisses or ignores teammates", "Only cheers for own highlights"],
-       develop: ["After each game, name one teammate who helped you win", "Do one act of encouragement before you leave the field", "Pray: 'Lord, help me love my teammates the way You love me'"] },
-  P: { key:"P", label:"Peace", icon:"☮️", tagline:"Calm anchored in Christ", color:"#00b36b", bg:"#f0fff4", border:"#ff8c00",
-       scoreMeaning: "0=Constant anxiety • 1=Occasional calm • 2=Usually calm • 3=Peace that guards the heart",
-       strong: ["Stays composed under pressure", "Calms teammates in tense moments", "Bounces back quickly from mistakes"],
-       weak:   ["Anxious or panicked when things go wrong", "Spreads tension to teammates", "Dwells on errors during play"],
-       develop: ["Practice three slow breaths before any big moment", "Write down one worry this week and give it to God in prayer", "Memorize Phil. 4:7 — let it anchor your pregame routine"] },
-  S: { key:"S", label:"Self-Control", icon:"🛡️", tagline:"Responding instead of reacting", color:"#0077cc", bg:"#f0f8ff", border:"#ff8c00",
-       scoreMeaning: "0=Frequent outbursts • 1=Improving • 2=Usually controlled • 3=Strong self-discipline",
-       strong: ["Responds to bad calls without blowing up", "Keeps emotions in check under provocation", "Leads by example in discipline"],
-       weak:   ["Frequent outbursts or meltdowns", "Argues with officials or coaches", "Lets frustration hurt performance"],
-       develop: ["Identify your #1 trigger — name it, then make a plan for it", "After a bad call, count to 5 before you react", "Ask a trusted teammate to hold you accountable this week"] },
-  G: { key:"G", label:"Gentleness", icon:"🌿", tagline:"Strength under control", color:"#9c4dff", bg:"#f8f0ff", border:"#ff8c00",
-       scoreMeaning: "0=Often harsh • 1=Sometimes gentle • 2=Usually gentle • 3=Strength under control",
-       strong: ["Encourages struggling teammates", "Competes hard without being cruel", "Uses words that build up, not tear down"],
-       weak:   ["Often harsh or cutting with words", "Intimidates or belittles others", "Confuses meanness with toughness"],
-       develop: ["Before criticizing a teammate, ask: 'Is this kind AND true?'", "Find one struggling player this week and intentionally encourage them", "Journal: where did strength AND gentleness show up together today?"] },
-  H: { key:"H", label:"Humility", icon:"🙏", tagline:"Playing from identity, not for identity", color:"#ff8c00", bg:"#fff8f0", border:"#ff8c00",
-       scoreMeaning: "0=Very prideful • 1=Occasional humility • 2=Growing humility • 3=Consistently humble",
-       strong: ["Credits teammates and coaches for success", "Accepts coaching without defensiveness", "Secure enough to celebrate others"],
-       weak:   ["Takes credit, deflects blame", "Gets defensive when corrected", "Needs to be the star"],
-       develop: ["After your next win, publicly credit two specific teammates", "When corrected by a coach, respond: 'Thank you, I'll work on that'", "Ask yourself: 'Am I playing TO prove something or FROM knowing who I am?'"] },
-  Gr: { key:"Gr", label:"Gratitude", icon:"🙌", tagline:"Thankful in all circumstances", color:"#ffaa00", bg:"#fffdf0", border:"#ff8c00",
-       scoreMeaning: "0=Very entitled • 1=Occasional thanks • 2=Usually grateful • 3=Thankful in all circumstances",
-       strong: ["Thanks coaches, officials, and opponents", "Grateful for the opportunity to compete", "Positive attitude win or lose"],
-       weak:   ["Entitled attitude about playing time or roles", "Rarely thanks others", "Complains about conditions, calls, or teammates"],
-       develop: ["Start every practice with one thing you're grateful for about this team", "Write a one-line thank-you to a coach or teammate this week", "After a loss, find three genuine things to be thankful for before you leave"] },
-  J: { key:"J", label:"Joy", icon:"🎉", tagline:"Delight that outlasts the score", color:"#ff6600", bg:"#fff4f0", border:"#ff8c00",
-       scoreMeaning: "0=Joy is gone • 1=Rare joy • 2=Usually joyful • 3=Consistent delight",
-       strong: ["Genuine enjoyment of the game", "Joy that doesn't depend on the scoreboard", "Lifts the energy of those around them"],
-       weak:   ["Only happy when winning", "Drains team energy with negativity", "Has lost the love of the game"],
-       develop: ["Recall why you first fell in love with this sport — write it down", "Find one moment in each practice to just enjoy the game", "Remind yourself: the scoreboard is temporary, but who you're becoming is not"] }
-};
+<!-- LEARN MODE -->
+<div id="mode-learn">
+  <div class="scenario-tabs">
+    <button class="sc-btn active" onclick="setScenario(0)" id="scbtn-0">⛽ Natural Gas <span class="run-dot"></span></button>
+    <button class="sc-btn" onclick="setScenario(1)" id="scbtn-1">💨 CO Alarm <span class="run-dot"></span></button>
+    <button class="sc-btn" onclick="setScenario(2)" id="scbtn-2">🏠 Structure Fire <span class="run-dot"></span></button>
+    <button class="sc-btn" onclick="setScenario(3)" id="scbtn-3">🔔 Fire Alarm <span class="run-dot"></span></button>
+    <button class="sc-btn" onclick="setScenario(4)" id="scbtn-4">⚡ Lines Down <span class="run-dot"></span></button>
+  </div>
+  <div class="content-wrap">
+    <div class="run-tracker">
+      <div class="run-tracker-header">
+        <h3>📊 My Runs — <span id="sc-run-label">Natural Gas</span></h3>
+        <button class="btn btn-ghost" style="padding:8px 14px;font-size:0.8rem;" onclick="logRun()">+ Log Run</button>
+      </div>
+      <div class="runs-list" id="runs-list">
+        <span class="no-runs">No runs logged yet.</span>
+      </div>
+    </div>
+    <div id="sc-content"></div>
+  </div>
+</div>
 
-const SCORE_LABELS = ["Missing", "Emerging", "Developing", "Strong"];
+<!-- QUIZ MODE -->
+<div id="mode-quiz" class="hidden">
+  <div class="quiz-wrap">
+    <div id="quiz-active">
+      <div class="quiz-meta">
+        <span style="font-size:0.82rem;color:var(--text-dim);font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.08em;">Question <span id="q-num">1</span> of <span id="q-total">10</span></span>
+        <div class="stars-row" id="quiz-stars-row"></div>
+      </div>
+      <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-bar" style="width:10%"></div></div>
+      <div class="quiz-category" id="quiz-cat"></div>
+      <div class="quiz-q-text" id="quiz-q-text"></div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-explanation" id="quiz-explanation"></div>
+      <div class="quiz-nav">
+        <div style="font-size:0.9rem;color:var(--text-dim)">Score: <strong id="quiz-score-live" style="color:var(--amber)">0</strong></div>
+        <button class="btn btn-red hidden" id="quiz-next-btn" onclick="nextQuizQ()">Next →</button>
+      </div>
+    </div>
+    <div id="quiz-score-screen" class="score-screen hidden">
+      <div class="score-ring" id="score-ring"></div>
+      <div class="score-label" id="score-label"></div>
+      <div class="score-message" id="score-msg"></div>
+      <div class="flex-row" style="justify-content:center;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-red" onclick="startQuiz()">Retake Quiz</button>
+        <button class="btn btn-ghost" onclick="setMode('learn')">Back to Learn</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
-function getCombo(scores) {
-  const strong = Object.values(scores).filter(v => v === 3).length;
-  const developing = Object.values(scores).filter(v => v >= 2).length;
-  const avg = (Object.values(scores).reduce((a,b) => a + b, 0) / 7).toFixed(1);
+<!-- SIMULATE MODE -->
+<div id="mode-sim" class="hidden">
+  <div class="sim-wrap">
+    <div class="sim-scene">
+      <div class="sim-tag">🚒 Dispatch Received</div>
+      <div class="sim-incident" id="sim-incident-type"></div>
+      <div class="sim-dispatch" id="sim-dispatch"></div>
+      <div class="sim-variables" id="sim-vars"></div>
+    </div>
+    <div class="sim-prompt">
+      <strong>⚡ Decision Point</strong>
+      <p id="sim-prompt-text"></p>
+    </div>
+    <div class="sim-choices" id="sim-choices"></div>
+    <div class="sim-feedback-text" id="sim-feedback-text"></div>
+    <div class="flex-row">
+      <button class="btn btn-red hidden" id="sim-next-btn" onclick="nextSim()">Next Scenario →</button>
+      <button class="btn btn-ghost" onclick="nextSim()">🎲 New Scenario</button>
+    </div>
+  </div>
+</div>
 
-  if (strong >= 5) return { label: "Kingdom Competitor", icon: "🏆", desc: `Avg ${avg}/3`, color: C.orange, progress: 95 };
-  if (developing >= 6) return { label: "Strong Disciple", icon: "🌟", desc: `Avg ${avg}/3`, color: C.green, progress: 85 };
-  return { label: "Developing Disciple", icon: "🌱", desc: `Avg ${avg}/3`, color: "#fd7e14", progress: Math.round(developing / 7 * 100) };
-}
+<!-- SOG MODE -->
+<div id="mode-sog" class="hidden">
+  <div class="sog-wrap">
+    <div class="section-label">Add Department Note / Local SOG</div>
+    <div class="sog-form">
+      <h3>📝 New Note</h3>
+      <div class="form-row">
+        <label>Category</label>
+        <select id="sog-cat">
+          <option>Natural Gas</option>
+          <option>CO Alarm</option>
+          <option>Structure Fire</option>
+          <option>Fire Alarm</option>
+          <option>Lines Down</option>
+          <option>General / All Calls</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Title</label>
+        <input type="text" id="sog-title" placeholder="e.g., SOP 3.1 — Gas Leak Response">
+      </div>
+      <div class="form-row">
+        <label>Note / SOG Content</label>
+        <textarea id="sog-body" placeholder="Enter local protocol, standing order, or department-specific note..."></textarea>
+      </div>
+      <button class="btn btn-red" onclick="addSOG()">Save Note</button>
+    </div>
+    <div class="section-label">Saved Notes</div>
+    <div id="sog-list"><p style="color:var(--text-dim);font-size:0.9rem;font-style:italic;padding:10px 0;">No notes saved yet.</p></div>
+  </div>
+</div>
 
-function calculateTeamProgress(athletes) {
-  if (athletes.length === 0) return { avgScore: "0.0", strongPercent: 0, totalAthletes: 0 };
-  let totalScore = 0, totalStrong = 0;
-  const totalVirtues = athletes.length * 7;
+<!-- PANELS MODE -->
+<div id="mode-panels" class="hidden">
+  <div class="panels-wrap">
+    <div class="panels-intro">
+      <strong>🖥️ Fire Alarm Panel Reference</strong> — Common panels you will encounter on alarm activations. Each entry covers: panel ID, silencing, reset procedure, key buttons, and what to watch for. Always verify with building staff and your department SOG before operating any panel.
+    </div>
+    <div class="panel-filter-bar" id="panel-filter-bar">
+      <button class="panel-filter-btn active" onclick="filterPanels('all')">All Panels</button>
+      <button class="panel-filter-btn" onclick="filterPanels('Honeywell')">Honeywell</button>
+      <button class="panel-filter-btn" onclick="filterPanels('Simplex')">Simplex</button>
+      <button class="panel-filter-btn" onclick="filterPanels('Notifier')">Notifier</button>
+      <button class="panel-filter-btn" onclick="filterPanels('Edwards')">Edwards / EST</button>
+      <button class="panel-filter-btn" onclick="filterPanels('Bosch')">Bosch / Radionics</button>
+      <button class="panel-filter-btn" onclick="filterPanels('Silent Knight')">Silent Knight</button>
+      <button class="panel-filter-btn" onclick="filterPanels('Gamewell')">Gamewell</button>
+      <button class="panel-filter-btn" onclick="filterPanels('Mircom')">Mircom</button>
+    </div>
+    <div id="panels-list"></div>
+  </div>
+</div>
 
-  athletes.forEach(a => {
-    const scores = Object.values(a.scores || {});
-    totalScore += scores.reduce((a,b) => a + b, 0);
-    totalStrong += scores.filter(v => v === 3).length;
+<footer>HHFD Fire Response Trainer · Not a substitute for department SOGs · Always follow your officer's direction</footer>
+
+<script>
+const SCENARIOS = [
+  {
+    id:'gas', name:'Natural Gas Leak', emoji:'⛽',
+    tagline:'Approach upwind. Gas rises. LEL is your guide. The utility does the shutoff.',
+    sizeup:[
+      {icon:'🌬️',label:'Wind Direction?',text:'Stage and approach upwind — always'},
+      {icon:'🔥',label:'Heat Source?',text:'Gas or electric? ID appliances on size-up'},
+      {icon:'📊',label:'LEL Reading?',text:'<10% caution. 10-50% elevated. >50% evacuate now'},
+      {icon:'🏠',label:'Odor Location?',text:'Inside only? Outside? Both? Neighbor only?'},
+      {icon:'🔧',label:'Meter Location?',text:'Exterior wall, basement, utility room, alley'},
+      {icon:'👤',label:'Occupants?',text:'Anyone inside? Symptomatic? Evacuated?'},
+    ],
+    checklist:[
+      {tag:'red',text:'Stage upwind, 150+ ft minimum — eliminate ALL ignition sources'},
+      {tag:'red',text:'No lights, switches, doorbells, or radios near the leak source'},
+      {tag:'amber',text:'Don 4-gas meter before entry — check O₂, LEL, CO, H₂S'},
+      {tag:'amber',text:'Identify gas appliances: furnace, water heater, stove, dryer, fireplace'},
+      {tag:'amber',text:'Ventilate naturally if LEL low — NO electric fans near leak'},
+      {tag:'green',text:'Notify gas utility EARLY — they do the meter shutoff'},
+      {tag:'green',text:'Establish perimeter; hold until utility clears'},
+    ],
+    dont:[
+      'Do NOT shut off the meter yourself unless trained and authorized by your SOG',
+      'Do NOT use electrical switches, doorbells, or garage openers near the structure',
+      'Do NOT key your radio within the immediate hazard zone',
+      'Do NOT re-enter until utility clears the scene and meters confirm safe',
+      'Do NOT assume "no smell = no leak" — meter readings are your ground truth',
+      'Do NOT use electric fans — use natural ventilation only',
+    ],
+    decisions:[
+      {cond:'LEL > 50% inside',action:'Evacuate immediately. No entry. Perimeter. Utility emergency call.'},
+      {cond:'LEL 10–50%',action:'Keep occupants out. Ventilate. Monitor readings. Contact utility.'},
+      {cond:'LEL < 10%',action:'Investigate with caution. ID source. Ventilate. Utility still notified.'},
+      {cond:'Odor only, meter = 0%',action:'May have dissipated. Thorough check. Document. Utility notified anyway.'},
+      {cond:'Active hissing / release',action:'Emergency. Utility called immediately. Evacuate block. Wide perimeter.'},
+      {cond:'Gas appliance on during leak',action:'Extinguish only if safe. Control gas supply. Cool surroundings.'},
+    ],
+    appliances:['Furnace (basement/utility room)','Gas water heater','Gas stove/range','Gas dryer','Gas fireplace/logs','Garage/BBQ gas lines','Pool or spa heater'],
+  },
+  {
+    id:'co', name:'CO Alarm', emoji:'💨',
+    tagline:'CO is invisible, odorless, and kills before you know it. Every alarm is real until proven otherwise.',
+    sizeup:[
+      {icon:'🤢',label:'Symptoms?',text:'Headache, nausea, dizziness, confusion — get them out'},
+      {icon:'🔥',label:'Heat Source?',text:'Gas furnace, water heater, stove, generator present?'},
+      {icon:'🌡️',label:'CO Reading (ppm)?',text:'<35 normal. 35–200 warning. >200 evacuate immediately'},
+      {icon:'🌬️',label:'Ventilation?',text:'HVAC running? Windows/doors? Attached garage?'},
+      {icon:'🚗',label:'Garage?',text:'Running vehicle is the most common residential CO source'},
+      {icon:'🔧',label:'Combustion Appliances?',text:'Check furnace, water heater, stove, fireplace, generator'},
+    ],
+    checklist:[
+      {tag:'red',text:'Evacuate ALL occupants immediately — do not investigate before evacuation'},
+      {tag:'red',text:'Anyone symptomatic gets fresh air, supplemental O₂, and EMS evaluation'},
+      {tag:'amber',text:'Meter CO in each room — document ppm readings by location'},
+      {tag:'amber',text:'Check all combustion appliances: furnace, water heater, range, dryer, fireplace'},
+      {tag:'amber',text:'Check attached garage for running vehicles or stored equipment'},
+      {tag:'amber',text:'Inspect flues and venting — blocked chimney or cracked heat exchanger'},
+      {tag:'green',text:'Do NOT allow re-entry until CO <35 ppm AND source identified and corrected'},
+      {tag:'green',text:'Notify gas utility if a combustion appliance is the confirmed source'},
+    ],
+    dont:[
+      'Do NOT dismiss a CO alarm as nuisance without investigation',
+      'Do NOT send anyone back inside without full CO monitoring',
+      'Do NOT clear scene with elevated readings and unknown source',
+      'Do NOT forget the attached garage — idling vehicle is the #1 residential cause',
+      'Do NOT assume "no symptoms = no CO" — buildup is gradual, impairment is insidious',
+      'Do NOT reset the alarm until the source is found and corrected',
+    ],
+    decisions:[
+      {cond:'CO > 200 ppm',action:'Evacuate. SCBA entry only. O₂ for all. EMS. Emergency utility call.'},
+      {cond:'CO 35–200 ppm, symptomatic',action:'Evacuate immediately. O₂ therapy. EMS eval. Find source.'},
+      {cond:'CO 35–200 ppm, no symptoms',action:'Precautionary evacuation. Ventilate. ID source. Utility.'},
+      {cond:'CO < 35 ppm, alarm sounding',action:'May be residual. Ventilate. Check all combustion appliances. Recheck.'},
+      {cond:'No CO detected, alarm sounding',action:'Possible low battery, end-of-life fault, or CO already dissipated. Check alarm age.'},
+      {cond:'Running vehicle in garage',action:'Shut off vehicle. Full ventilation. Check all adjoining living spaces.'},
+    ],
+    appliances:['Gas furnace — cracked heat exchanger / blocked flue (#1 cause in winter)','Gas water heater','Gas stove/range','Fireplace with blocked chimney','Generator (NEVER run indoors or in garage)','Vehicle in attached garage','Gas dryer with vent blockage'],
+  },
+  {
+    id:'fire', name:'Structure Fire', emoji:'🏠',
+    tagline:'Know your fuel. Gas = added danger. Electric = no gas shutoff needed. Read the building on approach.',
+    sizeup:[
+      {icon:'🔥',label:'Heat Source?',text:'GAS or ELECTRIC? Critical for hazard identification'},
+      {icon:'🏗️',label:'Construction?',text:'Wood frame, lightweight truss, masonry, commercial — affects collapse risk'},
+      {icon:'💨',label:'Smoke?',text:'Black (hot/fuel-rich). White (steam/early). Yellow-brown = backdraft risk'},
+      {icon:'🚪',label:'Entry Points?',text:'Doors/windows open? Victims visible? Safe approach?'},
+      {icon:'💧',label:'Water Supply?',text:'Hydrant distance and pressure. Tanker if rural. Tank on-board.'},
+      {icon:'⚡',label:'Utility Hazards?',text:'Gas meter location. Electrical panel. Overhead lines on structure.'},
+    ],
+    checklist:[
+      {tag:'red',text:'Radio size-up on approach: smoke, flame, structure type, exposures, life safety'},
+      {tag:'red',text:'VERIFY: Gas or electric heat? Locate gas meter on exterior before entry'},
+      {tag:'red',text:'ID gas appliances involved: furnace, water heater, stove, dryer'},
+      {tag:'amber',text:'Establish water supply early — charged line before entry, always'},
+      {tag:'amber',text:'360° walk-around — rear of building often shows most fire'},
+      {tag:'amber',text:'Gas utility called if gas appliance involved — utility does emergency shutoff'},
+      {tag:'amber',text:'Monitor for truss or structural compromise — early sign = exterior smoke from soffits'},
+      {tag:'green',text:'Accountability and rehab from the start — PAR every 15–20 minutes'},
+    ],
+    dont:[
+      'Do NOT enter without a charged line in hand',
+      'Do NOT ignore a gas meter on the structure — know its location before crews go interior',
+      'Do NOT open doors without reading conditions above (smoke, heat, pressure)',
+      'Do NOT operate interior in a structure with fire in a lightweight truss space',
+      'Do NOT let a gas meter burn unprotected — it is a critical hazard escalator',
+      'Do NOT assume all-electric means no gas — check for gas range/dryer/fireplace',
+    ],
+    decisions:[
+      {cond:'Gas heat + fire in utility room',action:'Highest risk. Utility called immediately. Protect meter. Charged line staged.'},
+      {cond:'Electric heat confirmed',action:'No furnace gas hazard. Still check gas appliances (stove, dryer, etc.).'},
+      {cond:'Heavy black smoke, closed structure',action:'Backdraft risk. Do NOT ventilate until charged line is charged and ready.'},
+      {cond:'Lightweight truss — fire in truss space',action:'Defensive. No interior attack. Collapse imminent after 5–10 min exposure.'},
+      {cond:'Gas meter in fire area',action:'Keep fire away. Utility emergency call. Cool with fog if possible. Report to command.'},
+      {cond:'Victim rescue required',action:'Risk vs. benefit. Charged line. 2-in/2-out unless immediate life-saving rescue.'},
+    ],
+    appliances:['Furnace (basement/utility room — most common)','Gas water heater (basement, closet, utility room)','Gas stove/range (kitchen)','Gas dryer (laundry room)','Gas fireplace (living room)','Pool/spa heater (exterior or garage)'],
+    gasVsElectric:{
+      gas:['Exterior gas meter on structure','Visible gas piping','Furnace with flue pipe or chimney','Pilot light window on water heater','Gas burners on range/cooktop'],
+      electric:['No exterior gas meter visible','Electric panel as only utility','Heat pump or baseboard heaters','Electric water heater (no flue)','All-electric range (smooth top or coil)'],
+    },
+  },
+  {
+    id:'alarm', name:'Fire Alarm Activation', emoji:'🔔',
+    tagline:'Treat every alarm as a working fire on approach. Your size-up proves otherwise — the dispatch does not.',
+    sizeup:[
+      {icon:'🔔',label:'Which Device?',text:'Pull station, smoke detector, duct detector, sprinkler flow?'},
+      {icon:'📍',label:'Location/Zone?',text:'Floor, zone, proximity to kitchen or mechanical room?'},
+      {icon:'👃',label:'Smoke or Odor?',text:'Anything visible or detectable on approach?'},
+      {icon:'🏢',label:'Occupancy?',text:'Residential, school, high-rise, industrial — changes tactics'},
+      {icon:'🕒',label:'Time of Day?',text:'Cooking hour = likely cooking. 3am smoke detector = serious'},
+      {icon:'🔁',label:'Repeat Alarm?',text:'Same zone multiple times = higher probability real event'},
+    ],
+    checklist:[
+      {tag:'red',text:'Treat as confirmed fire on approach — full response posture'},
+      {tag:'red',text:'Smoke detector activation: investigate floor of origin, floor above, floor below'},
+      {tag:'amber',text:'Duct detector = smoke in HVAC system — check mechanical room first, shut HVAC'},
+      {tag:'amber',text:'Sprinkler flow = water is flowing somewhere — find activated head immediately'},
+      {tag:'amber',text:'Pull station: look for fire, look for malicious or accidental activation'},
+      {tag:'amber',text:'Coordinate with building staff and panel for zone and device identification'},
+      {tag:'green',text:'Cooking area alarms: confirm with meter — steam and smoke both activate detectors'},
+      {tag:'green',text:'Document cause — repeated false alarms may warrant fire prevention follow-up'},
+    ],
+    dont:[
+      'Do NOT assume false alarm before you investigate — every alarm is real until you prove otherwise',
+      'Do NOT dismiss "it is just cooking" without physically confirming no fire or smoke',
+      'Do NOT reset the alarm panel before crew has investigated the zone of origin',
+      'Do NOT use the elevator in an alarming building — use stairs',
+      'Do NOT clear scene without documenting the cause of activation',
+    ],
+    decisions:[
+      {cond:'Sprinkler flow alarm',action:'Treat as working fire — find the flowing head. Fire or extreme heat is present somewhere.'},
+      {cond:'Duct detector activation',action:'Smoke in HVAC. Shut down air handler. Investigate mechanical room and all connected zones.'},
+      {cond:'Smoke detector, no smoke found',action:'Check for steam, cooking, dust, insects. Document. Advise on detector maintenance.'},
+      {cond:'Pull station, no fire found',action:'Could be accidental or malicious. Check all floors. Notify fire prevention if repeated.'},
+      {cond:'Kitchen detector + cooking odor',action:'Confirm no actual fire. Ventilate. Advise occupant. Document cause.'},
+      {cond:'High-rise, upper floor activation',action:'Staged evacuation. Command post in lobby. Investigate floor of origin + 2 above/below.'},
+    ],
+    appliances:[],
+  },
+  {
+    id:'lines', name:'Downed Power Lines', emoji:'⚡',
+    tagline:'EVERY downed line is energized until the utility says otherwise — in person, on scene.',
+    sizeup:[
+      {icon:'📏',label:'Safe Distance?',text:'1 full span (≈150 ft) minimum on all sides'},
+      {icon:'🚗',label:'Vehicle Contact?',text:'Occupants STAY IN until utility de-energizes'},
+      {icon:'🌧️',label:'Ground Wet?',text:'Increases ground gradient hazard — widen perimeter'},
+      {icon:'💡',label:'Line Energized?',text:'ALWAYS assume YES — silence and stillness mean nothing'},
+      {icon:'🏠',label:'Structures Involved?',text:'Line on roof, fence, or vehicle — treat all as energized'},
+      {icon:'📞',label:'Utility Called?',text:'Call immediately — get their ETA and keep updating'},
+    ],
+    checklist:[
+      {tag:'red',text:'NEVER approach or touch a downed line — energized until utility confirms otherwise'},
+      {tag:'red',text:'Perimeter: 1 full span (≈150 ft) minimum on all sides — more on wet ground'},
+      {tag:'red',text:'Keep ALL bystanders and vehicles out of perimeter — this is life-safety critical'},
+      {tag:'amber',text:'Vehicle contact: tell occupants STAY IN — exit only if fire, and then jump clear'},
+      {tag:'amber',text:'Do NOT apply water on or near energized lines — water conducts'},
+      {tag:'amber',text:'Notify utility immediately — they provide clearance, we do not'},
+      {tag:'green',text:'Document pole number and line location for utility dispatch'},
+      {tag:'green',text:'No scene clearance until utility confirms de-energized and locked out — in person'},
+    ],
+    dont:[
+      'Do NOT assume a quiet or motionless line is de-energized — assume energized always',
+      'Do NOT apply water streams near downed lines — conductivity hazard',
+      'Do NOT allow bystanders to approach — enforce the perimeter aggressively',
+      'Do NOT approach a vehicle with a line on it — you are now in the ground gradient zone',
+      'Do NOT cut a downed line — utility only',
+      'Do NOT stand in water or on wet ground near a downed line — ground gradient kills',
+    ],
+    decisions:[
+      {cond:'Line down, no contact',action:'Perimeter. Utility called. Hold position. Public safety priority.'},
+      {cond:'Occupant in vehicle, line on vehicle',action:'Tell them to STAY IN. Utility en route. Only exit if vehicle catches fire — jump clear, do not step.'},
+      {cond:'Person on ground near line',action:'DO NOT TOUCH. Utility emergency. Shield bystanders. EMS staged outside perimeter.'},
+      {cond:'Line arcing or sparking',action:'Widen perimeter significantly. No entry. Immediate utility emergency.'},
+      {cond:'Line on structure, no fire',action:'Evacuate structure. Utility call. No entry until confirmed de-energized.'},
+      {cond:'Line on structure, fire visible',action:'Defensive. No interior attack. Protect exposures. Utility emergency.'},
+    ],
+    appliances:[],
+  },
+];
+
+const QUIZ_QUESTIONS = [
+  {cat:'Natural Gas',q:'You arrive at a reported gas odor. Your 4-gas meter reads 8% LEL inside the structure. What is the appropriate action?',opts:['Immediately evacuate all occupants and establish perimeter','Continue investigation with caution, identify source, begin ventilation','Shut off the gas meter at the exterior','Leave — LEL under 10% is safe'],correct:1,explain:'Below 10% LEL is the caution zone — not immediately dangerous, but investigation continues carefully. You should NOT shut the meter yourself (utility responsibility unless your SOG specifically authorizes it), and evacuation is not automatically required at this level. However, if readings rise, your threshold for evacuation drops fast.'},
+  {cat:'Natural Gas',q:'Should a firefighter shut off the gas meter at a residential gas leak call?',opts:['Yes — it is the first priority action','Only if trained and authorized per department SOG','Never — only the customer can do this','Yes, but only when wearing gloves'],correct:1,explain:'Meter shutoff is the jurisdiction of the gas utility in most departments. Some departments train specific personnel for this task, but it is NOT a default firefighter action. Call the utility and let them control the meter unless your SOG explicitly authorizes it. Unauthorized meter manipulation can create additional hazards.'},
+  {cat:'Natural Gas',q:'At a natural gas leak, why should you NOT use a portable electric fan to ventilate?',opts:['Fans are too slow to be effective','Electric fan motors can produce a spark and ignite accumulated gas','Electric fans increase gas concentration','Fans are not rated for hazmat environments'],correct:1,explain:'Electric motors — even "sealed" ones — can produce sparks during startup, operation, or shutdown. In a gas-rich environment near the LEL, this ignition source can be catastrophic. Use natural ventilation (open doors and windows) or intrinsically safe equipment rated for explosive atmospheres only.'},
+  {cat:'Natural Gas',q:'Natural gas (methane) is lighter than air. How does this affect your size-up inside a structure?',opts:['Check floor level first — gas pools low','Check high — gas rises and accumulates near the ceiling and in roof spaces','Concentration is even throughout — check at waist height','Gas is heavier inside than outside due to pressure'],correct:1,explain:'Natural gas (methane) has a specific gravity well below 1.0, making it lighter than air. It rises and accumulates at ceiling level, in attic spaces, and in upper areas of rooms. This is why attic and ceiling-level leaks can be especially dangerous. Propane, by contrast, is heavier than air and sinks to the floor — a critical difference.'},
+  {cat:'Natural Gas',q:'An LEL reading jumps from 12% to 47% as you move deeper into the structure. Your next action?',opts:['Continue to find the source — you are not at 50% yet','Radio command and prepare to evacuate immediately','Shut off all power at the breaker panel','Apply fog stream to dilute the gas'],correct:1,explain:'A rapidly rising LEL is a serious warning sign. At 47% and climbing, you are approaching the evacuation threshold of 50%. Communicate to command, prepare occupants to exit, get utility en route. Do NOT touch electrical panels (spark hazard) or apply water near gas. Speed of rise matters as much as the reading itself.'},
+  {cat:'CO Alarm',q:'You arrive at a CO alarm. Occupants report mild headaches. Your CO meter reads 85 ppm. What do you do?',opts:['Ventilate and monitor — 85 ppm is not life-threatening','Evacuate occupants, administer supplemental O₂, contact EMS','Reset the alarm and monitor for 30 minutes','Only evacuate if readings exceed 200 ppm'],correct:1,explain:'Symptomatic occupants at 85 ppm require evacuation and medical evaluation. Headaches indicate CO absorption has already occurred. Supplemental O₂ accelerates CO elimination from hemoglobin. Do NOT reset the alarm before finding the source. NIOSH IDLH for CO is 1,200 ppm, but harmful effects begin well below that — especially for vulnerable populations.'},
+  {cat:'CO Alarm',q:'CO meter reads 0 ppm throughout the residence, but the alarm is still sounding. Most likely explanation?',opts:['The alarm is broken — replace it','CO may have dissipated; also check for alarm battery failure or end-of-life signal','Someone filed a false report','The meter is malfunctioning'],correct:1,explain:'CO can dissipate quickly when a source is corrected or with ventilation. The alarm may have triggered accurately and CO cleared before you arrived. Also check the alarm\'s age — CO alarms expire after 5–7 years and signal end-of-life differently than a CO event. Document everything and verify all combustion appliances even with a 0 reading.'},
+  {cat:'CO Alarm',q:'Which is the MOST common source of residential CO poisoning during heating season?',opts:['Leaving a stove burner on','Malfunctioning or improperly vented furnace','Gas water heater without a proper flue','Candles in an enclosed space'],correct:1,explain:'The furnace is the leading residential CO source, especially in winter when it runs continuously. A cracked heat exchanger allows combustion gases to mix with circulated air. Blocked flues and backdrafting also occur, particularly in older or poorly maintained systems. The furnace is the first appliance to check on a heating-season CO call.'},
+  {cat:'CO Alarm',q:'A vehicle is running in an attached garage and the CO alarm is sounding inside the house. Your first action?',opts:['Check CO ppm readings before doing anything else','Evacuate all occupants immediately, then shut off the vehicle','Open the garage door first','Check the furnace before addressing the vehicle'],correct:1,explain:'Life safety first — evacuate immediately. CO acts fast and impairs judgment before obvious symptoms appear. Once occupants are out, shut off the vehicle and ventilate. An idling car in an attached garage can generate lethal CO concentrations in minutes, and the gas migrates easily into living spaces through shared walls and HVAC.'},
+  {cat:'Structure Fire',q:'You arrive at a working structure fire. A gas meter is visible on the exterior. What is your immediate priority regarding the gas?',opts:['Shut the meter off before beginning interior attack','Note the meter location, keep fire away from it, and notify the utility','Ignore it — the fire is the priority','Have the homeowner shut it off'],correct:1,explain:'The gas meter\'s location is critical tactical information that must go to command. Keep attack operations from damaging or impinging on the meter. Call the utility for emergency shutoff early — they take time to arrive. Do NOT shut it yourself unless trained and authorized. Do NOT ignore it — a gas line feeding a structure fire is an extreme escalation hazard.'},
+  {cat:'Structure Fire',q:'Heavy black smoke is pushing from a closed structure. No flames visible. Windows are intact. This is most consistent with what condition?',opts:['An early-stage attic fire with limited oxygen','Potential backdraft — ventilation-limited fire with superheated smoke','A furnace fire — not immediately dangerous','The fire has self-extinguished'],correct:1,explain:'Pressurized black smoke from a tightly closed building is a classic backdraft indicator. The fire is starved of oxygen but the fuel and heat are still present. Introducing air — by opening a door or window — can cause explosive ignition. Do NOT ventilate until a charged line is ready. Read the door before opening: feel for heat, watch smoke movement.'},
+  {cat:'Structure Fire',q:'How do you determine if a building has gas heat vs. electric heat during your 360° size-up?',opts:['Ask a neighbor','Look for an exterior gas meter, gas piping, or furnace flue on the exterior','Electric buildings have a larger panel box','Check the thermostat type'],correct:1,explain:'The fastest and most reliable method is a 360° exterior check: gas meter on an exterior wall, visible gas piping, or a furnace flue pipe on the roof or exterior all confirm gas heat. No meter, plus a heat pump or baseboard units, indicates electric. The 360° observation is non-negotiable on structure fire response — the back of the building often shows the most fire too.'},
+  {cat:'Structure Fire',q:'Fire is in the laundry room. You identify an electric washer, a gas dryer, and a gas water heater. What must be reported to command?',opts:['High heat potential from the washer motor','Two gas appliances in the fire area — utility notification is critical','Static electricity from the laundry as a secondary ignition source','Lint accumulation as a secondary fuel source only'],correct:1,explain:'Two gas appliances in the fire area means two active gas supply lines potentially involved. This must be immediately reported to command and changes the tactical picture significantly. Utility should be called for emergency shutoff. The furnace may also be nearby. This is fundamentally different from an all-electric laundry room.'},
+  {cat:'Fire Alarm',q:'A sprinkler flow alarm activates in a commercial building. Panel shows Zone 3, Floor 2. Your approach?',opts:['Check the panel and reset it — probably a valve issue','Approach Zone 3 as a working fire: charged line, full investigation','Check for CO first before anything','Wait for the building engineer before entering'],correct:1,explain:'A sprinkler flow alarm means water is discharging from a sprinkler head that only activates at 135–165°F. This is a confirmed-fire indicator until proven otherwise. Treat it as a working fire: bring a charged line. Find the activated head — there is almost certainly heat or fire at that location. Reset nothing until investigation is complete.'},
+  {cat:'Fire Alarm',q:'In a high-rise alarm response, which floors should crews investigate?',opts:['Start at the lobby and work up sequentially','Floor of origin (per panel), plus one floor above and one floor below','Top floor first — heat and smoke rise','Floor with the most occupants present'],correct:1,explain:'The alarm panel identifies the zone or floor of origin. Fire and smoke can spread to adjacent floors — particularly above (heat rises). Standard protocol is to investigate the floor of origin plus one floor above and one below. High-rise responses may require a larger search footprint and a staged evacuation depending on the building\'s plan.'},
+  {cat:'Lines Down',q:'A power line is on top of a vehicle with an uninjured occupant inside. You tell them:',opts:['Open the door carefully and step away quickly','Stay in the vehicle — do not open the door or touch the door handle','Roll down the window and grab a nearby post or tree','Jump to the firefighter — they will catch you'],correct:1,explain:'The safest place is inside the vehicle when a live line is on it. The car body provides protection. Ground gradient — voltage difference in the earth radiating from the line — means stepping out creates a lethal current path through the body from foot to foot. The only exception: if the vehicle catches fire, the occupant must JUMP clear — not step — to avoid bridging the ground gradient.'},
+  {cat:'Lines Down',q:'What is the minimum safe staging distance from a downed power line?',opts:['30 feet','One full span between utility poles (approximately 150 feet)','50 feet','The distance where you cannot hear arcing'],correct:1,explain:'One full span — the distance between utility poles, typically 100–150+ feet — is the minimum perimeter. This accounts for potential secondary pole failure and extends well beyond the immediate line location. On wet ground, ground gradient hazard extends further. More distance is always safer — err wide.'},
+  {cat:'Lines Down',q:'Can you apply water to a fire near a downed power line?',opts:['Yes, using a wide fog pattern','Yes, from 30+ feet away','No — water is conductive and creates a current path to the nozzle','Yes, using only booster line pressure'],correct:2,explain:'Water conducts electricity, especially with dissolved minerals. A solid stream or fog stream near an energized line creates a conductive path back to the firefighter holding the nozzle — this is a fatal electrocution risk. Fires near downed power lines require a defensive posture, exposure protection only, until the utility de-energizes and confirms the circuit is locked out.'},
+  {cat:'Lines Down',q:'A downed power line is lying perfectly still, not sparking, and power appears out on the block. Is it safe to approach?',opts:['Yes — no sparking and no power indicates it is de-energized','No — a motionless, silent line can still be fully energized and deadly','Yes, if you are wearing rubber gloves','Yes, if weather conditions are dry'],correct:1,explain:'Silence and stillness are not safety indicators. A line can carry 7,200 volts or more with no visible arcing or movement. "Power out on the block" can result from the fault — not from utility-confirmed de-energization. Grid backfeeding and switching errors can also re-energize lines. ALWAYS assume energized until a utility representative physically confirms it on scene.'},
+  {cat:'Lines Down',q:'Who has the authority to declare a downed power line safe for operations?',opts:['The incident commander based on visual assessment','A senior firefighter with 15+ years of experience','Only a utility company representative on scene — in person','The battalion chief after 30 minutes without arcing'],correct:2,explain:'Only the utility company can confirm a line is de-energized. Visual assessment, time elapsed, and experience level are all irrelevant to this decision. The utility must isolate, de-energize, and physically confirm on scene that the circuit is locked out before any operations near the line. This is non-negotiable regardless of rank.'},
+  {cat:'CO Alarm',q:'Which population is MOST vulnerable to CO poisoning at lower concentrations?',opts:['Healthy adult males over 40','Infants, elderly, and those with cardiac or pulmonary conditions','Adults who exercise regularly','Healthy adults between 20–35'],correct:1,explain:'Infants, the elderly, and those with pre-existing cardiac or pulmonary conditions are at greatest risk. CO displaces oxygen from hemoglobin — people with already limited oxygen-carrying capacity or cardiovascular reserve can be critically affected at concentrations that a healthy adult might find only mildly uncomfortable. Check these individuals first.'},
+  {cat:'Structure Fire',q:'Lightweight truss construction is confirmed. Fire has been burning in the truss space for an unknown duration. Appropriate tactic?',opts:['Aggressive interior attack — speed limits collapse risk','Defensive operations — truss failure can occur within 5–10 minutes of fire exposure','Interior attack is fine if only two rooms are involved','Lightweight trusses are stronger than conventional dimensional lumber'],correct:1,explain:'Lightweight trusses are engineered for load distribution under normal conditions but fail catastrophically under fire exposure — often within 5–10 minutes. Unlike dimensional lumber, which chars slowly and retains strength, trusses fail suddenly and completely. If fire is confirmed in the truss space (attic, floor assembly, or roof), defensive operations are standard doctrine.'},
+  {cat:'Natural Gas',q:'Which of the following is NOT typically a gas appliance during residential size-up?',opts:['Furnace','Gas water heater','Central air conditioning unit','Gas dryer'],correct:2,explain:'Central air conditioning units are electric — they use refrigerant and compressors, not combustion. Furnaces, water heaters, stoves, and dryers commonly use natural gas. This distinction matters because a "gas" size-up must still include a stove or water heater even in a home with electric heat. The AC is not a gas hazard source.'},
+  {cat:'Fire Alarm',q:'A duct detector activates in a commercial building. What does this specifically indicate?',opts:['Smoke is concentrated at the detector location only','Smoke has entered the HVAC system and is being distributed from a source elsewhere','Steam from a kitchen directly below activated the sensor','The HVAC system itself is on fire'],correct:1,explain:'Duct detectors sample the air moving through the HVAC system. Activation means smoke has entered the ductwork and is circulating — the source could be in any zone connected to that air handler. Shut down the HVAC immediately to stop smoke distribution and begin investigating the mechanical room plus all connected zones. This is categorically different from a spot-type detector.'},
+  {cat:'Fire Alarm',q:'A kitchen smoke detector activates in a high-rise apartment. Resident says "I was just cooking, it is nothing." Your action?',opts:['Accept their explanation — reset the alarm and clear','Confirm yourself: visually check for smoke/fire, meter the space, ventilate, document','Call fire prevention and leave','Evacuate the entire building as a precaution'],correct:1,explain:'Never accept a resident\'s verbal assessment as scene clearance. You must confirm: visually check the unit, use your meter if any doubt remains, check thoroughly. Cooking is the most common cause of residential fire alarm activations — but the minority of these activations are actual fires, and your job is to determine which category this is. Document the cause every time.'},
+];
+
+const SIM_SCENARIOS = [
+  {
+    type:'Natural Gas Leak',dispatch:'Dispatch to 1142 Elm Street for a reported natural gas odor. Neighbors say they can smell it on the sidewalk. No reported injuries. Home occupied.',
+    vars:['Single-family residence','Winds from NW at 8 mph','Mild weather, 62°F','Home occupied — family of three'],
+    prompt:'You pull up. Strong gas odor in the air. Your partner reaches for the doorbell to make contact with the occupants. What do you do?',
+    choices:[
+      {text:'Stop them immediately — no electrical devices of any kind near the structure',rating:'best'},
+      {text:'Let them ring it — you need to contact the occupants',rating:'poor'},
+      {text:'Ring the bell yourself — you have your gear on',rating:'poor'},
+      {text:'Knock on the door firmly to alert occupants without using the bell',rating:'ok'},
+    ],
+    feedback:{
+      best:'✅ CORRECT — No electrical devices near a gas leak. Doorbells, light switches, and garage openers are all potential ignition sources.',
+      ok:'Knocking is better than ringing a bell, but any impact near a gas-rich structure requires caution. Ensure the environment is safe.',
+      poor:'WRONG — Doorbells use electric circuits that can spark. In a gas-rich atmosphere, this is a life-threatening ignition source regardless of who operates it.',
+    },
+    rationale:'Eliminate ALL ignition sources near a gas leak scene. Even seemingly minor electrical devices carry spark potential in an LEL-elevated environment.',
+  },
+  {
+    type:'Natural Gas — High LEL',dispatch:'Inside a residence investigating a gas odor complaint. No leak found yet. Meter read 4% LEL near the front door.',
+    vars:['Gas furnace in basement','Gas water heater present','Initial reading: 4% LEL at entry','Windows closed'],
+    prompt:'As you reach the top of the basement stairs, your LEL reading jumps to 52%. What is your immediate action?',
+    choices:[
+      {text:'Back out immediately — radio command and begin evacuating all occupants',rating:'best'},
+      {text:'Keep going — you are almost at the source and can stop it',rating:'poor'},
+      {text:'Locate the shutoff valve on the gas line near the furnace',rating:'poor'},
+      {text:'Open the nearest basement window first, then retreat to the door',rating:'ok'},
+    ],
+    feedback:{
+      best:'✅ CORRECT — 52% LEL is above the evacuation threshold. Back out immediately, radio command, evacuate occupants. Do not search for the source at this reading.',
+      ok:'Your instinct to ventilate is understandable, but your priority is immediate evacuation. If the window operates electrically or requires effort near the gas concentration, this increases your risk. Exit first.',
+      poor:'WRONG — 52% LEL is in the explosive range. Any spark from tools, equipment, static, or shutoff valve operation can ignite the atmosphere. Your safety first — always.',
+    },
+    rationale:'50% LEL or above = immediate evacuation threshold. Do not investigate further. Do not operate valves. Exit, radio command, establish perimeter.',
+  },
+  {
+    type:'CO Alarm',dispatch:'187 Oak Drive. CO alarm. Family of four. Adults report they "feel completely fine." Alarm has been sounding for approximately 20 minutes.',
+    vars:['February — furnace running all day','Attached two-car garage','CO meter en route with crew','Occupants in the living room'],
+    prompt:'The father refuses evacuation. "We feel totally fine, it is definitely a bad alarm." He moves toward the front door to let you in only. Your response?',
+    choices:[
+      {text:'Explain that CO impairs the very ability to recognize CO poisoning — evacuate all occupants regardless',rating:'best'},
+      {text:'Agree to take CO readings inside first, then decide on evacuation',rating:'ok'},
+      {text:'Let them stay inside while you investigate — they are competent adults',rating:'poor'},
+      {text:'Reset the alarm and monitor for 10 minutes — they may be right',rating:'poor'},
+    ],
+    feedback:{
+      best:'✅ CORRECT — CO poisoning causes progressive confusion and impaired judgment. Victims genuinely do not recognize their own symptoms. Evacuation is non-negotiable regardless of subjective complaints.',
+      ok:'Getting a reading is useful tactically, but do not delay evacuation to do it. You can meter while your partner moves occupants out.',
+      poor:'WRONG — A sounding CO alarm with unknown source is an emergency. "Feeling fine" is the most unreliable indicator available. CO impairs the faculties needed to recognize CO impairment.',
+    },
+    rationale:'CO poisoning is insidious precisely because it impairs the ability to recognize it. Occupant self-report is not a reliable tool. Evacuate first, investigate second.',
+  },
+  {
+    type:'Structure Fire',dispatch:'Working structure fire. 2-story wood frame. Smoke from first floor kitchen area. Neighbor reports occupant unaccounted for.',
+    vars:['Gas meter on exterior, adjacent to kitchen','Heavy smoke from kitchen windows','Neighbor confirms occupant was inside 5 min ago','Wind from west'],
+    prompt:'During your 360° walk-around, you spot the gas meter is on the exterior wall directly next to the kitchen window where fire is showing. What do you radio to command?',
+    choices:[
+      {text:'Report gas meter location to command, request utility emergency, protect meter with fog if possible',rating:'best'},
+      {text:'Do not radio — extinguish the fire fast and the meter issue resolves itself',rating:'poor'},
+      {text:'Shut the meter off immediately before beginning interior operations',rating:'ok'},
+      {text:'Note it mentally and focus on the rescue first — utility can wait',rating:'poor'},
+    ],
+    feedback:{
+      best:'✅ CORRECT — Command needs this information immediately. The gas meter in the fire area changes the tactical picture. Request utility. Protect the meter from direct flame impingement.',
+      ok:'Shutting the meter may be appropriate per your SOG, but the critical action is communication to command. Without that information, crews operating interior are unaware of the escalation hazard.',
+      poor:'WRONG — A gas meter exposed to fire can result in a BLEVE or uncontrolled gas release that escalates rapidly. This is a critical tactical and life-safety issue that must be communicated to command immediately.',
+    },
+    rationale:'Gas meter proximity to fire is among the most critical tactical observations at a structure fire. Command must know. Utility must respond. Operations must account for it.',
+  },
+  {
+    type:'Downed Power Lines',dispatch:'Vehicle vs. utility pole. Wet conditions. One occupant visible and conscious inside the vehicle. Power line is lying across the roof of the car. Arcing observed.',
+    vars:['Recent rain — wet roadway','Occupant appears uninjured','Line arcing intermittently','Block power appears out'],
+    prompt:'You arrive and see the occupant beginning to open the car door to exit the vehicle. A live line is across the roof. What do you do immediately?',
+    choices:[
+      {text:'Shout loudly and clearly: STOP — STAY IN THE CAR — DO NOT TOUCH THE DOOR',rating:'best'},
+      {text:'Approach the vehicle and physically assist them out as quickly as possible',rating:'poor'},
+      {text:'Radio command and wait for utility — it is not within your authority to act',rating:'poor'},
+      {text:'Throw them a rope or strap to grab and pull themselves out',rating:'poor'},
+    ],
+    feedback:{
+      best:'✅ CORRECT — Your voice is your safest and most effective tool in this situation. Shout clearly to stop the occupant from exiting. Stepping from an energized vehicle onto wet ground creates a fatal current path.',
+      ok:null,
+      poor:'WRONG — Approaching the vehicle puts you in the ground gradient hazard zone on wet ground. A rope thrown near an energized vehicle creates a conductive path to you. Silence while someone exits into lethal voltage is not a permissible option.',
+    },
+    rationale:'Ground gradient: electrical current radiates outward from a downed line through the ground. Each foot of distance from the line has a different voltage potential. Stepping out bridges that potential difference through the body. The vehicle acts as a Faraday cage — keep the occupant in it.',
+  },
+  {
+    type:'Fire Alarm Activation',dispatch:'Fire alarm — 6-story apartment building. Panel shows Zone 4, Floor 3, corridor smoke detector. Time: 7:14 PM weekday.',
+    vars:['Approximately 80 units in building','Residents visible in lobby and on sidewalk','Dinner hour — cooking common on this floor','Building manager on scene'],
+    prompt:'The building manager says "That detector goes off every time someone cooks on 3. I am resetting the panel now." He moves toward the panel. Your action?',
+    choices:[
+      {text:'Stop him — do not reset the panel until crew has fully investigated Floor 3',rating:'best'},
+      {text:'Let him reset it — he is the authority on his building',rating:'poor'},
+      {text:'Reset the panel but stay on scene for 5 more minutes',rating:'poor'},
+      {text:'Send one crew member to Floor 3 simultaneously as he resets',rating:'ok'},
+    ],
+    feedback:{
+      best:'✅ CORRECT — The panel must not be reset before investigation. Resetting clears zone information and may silence the system. Investigation first, always — then reset with confirmation of cause.',
+      ok:'Better than a full reset, but the simultaneous approach is still risky. The panel reset should wait until investigation is complete and cause confirmed.',
+      poor:'WRONG — A corridor smoke detector on Floor 3 is not a cooking-area device. Repeated false alarms create familiarity bias — but real fires happen in those same buildings. Investigate fully before any reset.',
+    },
+    rationale:'Alarm panels contain critical tactical information. Building managers often have good intentions and real familiarity with their buildings — but they are not trained to make fire investigation decisions. Investigation before reset, every time.',
+  },
+];
+
+// STATE
+let currentMode = 'learn';
+let currentScenario = 0;
+let currentQuizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+let quizQs = [];
+let simAnswered = false;
+let currentSim = null;
+let runData = {};
+let sogData = [];
+
+try { runData = JSON.parse(localStorage.getItem('frt-runs') || '{}'); } catch(e) { runData = {}; }
+try { sogData = JSON.parse(localStorage.getItem('frt-sog') || '[]'); } catch(e) { sogData = []; }
+
+function setMode(m) {
+  currentMode = m;
+  ['learn','quiz','sim','sog','panels'].forEach(x => {
+    const el = document.getElementById('mode-' + x);
+    const btn = document.getElementById('mode-btn-' + x);
+    if (x === m) { el.style.display = 'block'; btn.classList.add('active'); }
+    else { el.style.display = 'none'; btn.classList.remove('active'); }
   });
-
-  const avgScore = (totalScore / totalVirtues).toFixed(1);
-  const strongPercent = Math.round((totalStrong / totalVirtues) * 100);
-
-  return { avgScore, strongPercent, totalAthletes: athletes.length };
+  if (m === 'quiz') startQuiz();
+  if (m === 'sim') nextSim();
+  if (m === 'sog') renderSOG();
+  if (m === 'panels') renderPanels();
 }
 
-// ─── MODALS ───────────────────────────────────────────────────────────────────
-function Modal({title, onClose, children}) {
-  return (
-    <div style={{position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div style={{background:"#fff", borderRadius:16, width:"92%", maxWidth:720, maxHeight:"92vh", overflow:"hidden", boxShadow:"0 25px 70px rgba(0,0,0,0.25)"}}>
-        <div style={{padding:"18px 24px", borderBottom:"1px solid #dee2e6", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-          <span style={{fontSize:21, fontWeight:800, color:C.orange}}>{title}</span>
-          <button onClick={onClose} style={{fontSize:24, background:"none", border:"none", color:"#666"}}>✕</button>
-        </div>
-        <div style={{padding:24, overflowY:"auto", maxHeight:"78vh"}}>{children}</div>
-      </div>
-    </div>
-  );
+// LEARN
+function setScenario(n) {
+  currentScenario = n;
+  document.querySelectorAll('.sc-btn').forEach((b, i) => b.classList.toggle('active', i === n));
+  document.getElementById('sc-run-label').textContent = SCENARIOS[n].name;
+  renderLearn(n);
+  renderRuns(n);
 }
 
-function ConfirmDelete({name, onConfirm, onCancel}) {
-  return (
-    <Modal title="Delete Athlete" onClose={onCancel}>
-      <p style={{fontSize:16, marginBottom:24}}>Are you sure you want to permanently delete <strong>{name}</strong>?</p>
-      <p style={{color:"#ef4444", marginBottom:24}}>This cannot be undone.</p>
-      <div style={{display:"flex", gap:12, justifyContent:"flex-end"}}>
-        <button onClick={onCancel} style={{padding:"12px 24px", border:"none", background:"#ddd", borderRadius:10}}>Cancel</button>
-        <button onClick={onConfirm} style={{padding:"12px 28px", border:"none", background:"#ef4444", color:"#fff", borderRadius:10, fontWeight:700}}>Yes, Delete</button>
-      </div>
-    </Modal>
-  );
-}
+function renderLearn(n) {
+  const sc = SCENARIOS[n];
+  let h = `<h2 class="sc-title">${sc.emoji} ${sc.name}</h2><p class="sc-subtitle">${sc.tagline}</p>`;
+  h += `<div class="section-label">Size-Up Questions — Ask Every Time</div><div class="sizeup-grid">`;
+  sc.sizeup.forEach(q => { h += `<div class="sizeup-q"><div class="icon">${q.icon}</div><div class="text"><strong>${q.label}</strong>${q.text}</div></div>`; });
+  h += '</div>';
 
-// ─── EDIT MODAL ───────────────────────────────────────────────────────────────
-function EditModal({person, onSave, onClose}) {
-  const [data, setData] = useState({...person, notes: person.notes || ""});
-
-  const updateScore = (key, value) => setData(prev => ({...prev, scores: {...prev.scores, [key]: Number(value)}}));
-
-  return (
-    <Modal title={data.id ? "Edit Athlete" : "Add New Athlete"} onClose={onClose}>
-      <input placeholder="Athlete Name *" value={data.name||""} onChange={e=>setData({...data,name:e.target.value})} style={{width:"100%", padding:14, fontSize:17, border:`2px solid ${C.border}`, borderRadius:10, marginBottom:12}} />
-      <input placeholder="Role / Team (optional)" value={data.role||""} onChange={e=>setData({...data,role:e.target.value})} style={{width:"100%", padding:14, fontSize:17, border:`2px solid ${C.border}`, borderRadius:10, marginBottom:20}} />
-
-      <div style={{marginBottom:20}}>
-        <div style={{fontWeight:700, color:C.orange, marginBottom:12}}>Score Each Virtue (0–3)</div>
-        {Object.values(VIRTUES).map(t => (
-          <div key={t.key} style={{marginBottom:16, padding:16, background:"#fff", border:`1px solid ${t.border}`, borderRadius:12}}>
-            <div style={{display:"flex", alignItems:"center", gap:12, marginBottom:8}}>
-              <span style={{fontSize:28}}>{t.icon}</span>
-              <div style={{flex:1, fontWeight:700, color:t.color}}>{t.label}</div>
-            </div>
-            <div style={{fontSize:13, color:"#555", marginBottom:10}}>{t.scoreMeaning}</div>
-            <div style={{display:"flex", gap:6}}>
-              {[0,1,2,3].map(n => (
-                <button key={n} onClick={()=>updateScore(t.key,n)} style={{flex:1, padding:"10px", borderRadius:8, background: data.scores[t.key]===n ? C.orange : "#f1f3f5", color: data.scores[t.key]===n ? "#fff" : "#333", fontWeight:700}}>
-                  {n}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{marginBottom:20}}>
-        <div style={{fontWeight:700, marginBottom:8}}>Notes / Observations / Prayers</div>
-        <textarea value={data.notes} onChange={e=>setData({...data, notes:e.target.value})} placeholder="Key moments, growth areas, specific prayers..." style={{width:"100%", height:130, padding:14, border:`2px solid ${C.border}`, borderRadius:10, resize:"vertical"}} />
-      </div>
-
-      <div style={{display:"flex", gap:12, justifyContent:"flex-end"}}>
-        <button onClick={onClose} style={{padding:"12px 24px", border:"none", background:"#ddd", borderRadius:10}}>Cancel</button>
-        <button onClick={()=>onSave(data)} style={{padding:"12px 32px", border:"none", background:C.orange, color:"#fff", borderRadius:10, fontWeight:700}} disabled={!data.name?.trim()}>💾 Save Changes</button>
-      </div>
-    </Modal>
-  );
-}
-
-// ─── PERSON DETAIL ────────────────────────────────────────────────────────────
-function PersonDetail({person, onClose, onEdit}) {
-  const [tab, setTab] = useState("assess");
-  const combo = getCombo(person.scores);
-
-  return (
-    <Modal title={person.name} onClose={onClose}>
-      <div style={{display:"flex", justifyContent:"space-between", marginBottom:20}}>
-        <div>
-          <div style={{fontSize:52}}>{combo.icon}</div>
-          <div style={{fontSize:24, fontWeight:800, color:combo.color}}>{combo.label}</div>
-        </div>
-        <button onClick={()=>{ onEdit(person); onClose(); }} style={{background:C.orange, color:"#fff", border:"none", padding:"10px 22px", borderRadius:10, fontWeight:700}}>✏ Edit</button>
-      </div>
-
-      <div style={{marginBottom:24}}>
-        <div style={{display:"flex", justifyContent:"space-between", fontSize:14, marginBottom:8}}>
-          <span>Character Progress</span>
-          <span>{combo.progress}%</span>
-        </div>
-        <div className="progress-bar">
-          <div className="progress-fill" style={{width: `${combo.progress}%`, background: combo.progress > 80 ? "linear-gradient(90deg,#00b36b,#34d399)" : combo.progress > 50 ? "linear-gradient(90deg,#ff8c00,#ffaa00)" : "#dc3545"}} />
-        </div>
-        <div style={{fontSize:13, color:C.textMuted, marginTop:6}}>
-          Last updated: {person.lastUpdated ? new Date(person.lastUpdated).toLocaleDateString() : "Never"}
-        </div>
-      </div>
-
-      <div style={{display:"flex", borderBottom:"3px solid #ff8c00", marginBottom:20}}>
-        {["assess","develop","notes"].map(t => (
-          <button key={t} onClick={()=>setTab(t)} style={{flex:1, padding:"14px", fontWeight:700, background:tab===t?C.orange:"#f1f3f5", color:tab===t?"#fff":"#333", border:"none"}}>
-            {t==="assess"?"📊 Profile":t==="develop"?"🛠 Develop":"📝 Notes"}
-          </button>
-        ))}
-      </div>
-
-      {tab==="assess" && Object.entries(person.scores).map(([k,v]) => {
-        const t = VIRTUES[k];
-        const showHas = v >= 2;
-        return (
-          <div key={k} style={{marginBottom:20, background:"#fff", border:`2px solid ${t.border}`, borderRadius:14, overflow:"hidden"}}>
-            <div style={{background:t.bg, padding:"16px 20px", display:"flex", alignItems:"center", gap:16}}>
-              <span style={{fontSize:42}}>{t.icon}</span>
-              <div style={{flex:1}}><div style={{fontSize:21, fontWeight:800, color:t.color}}>{t.label}</div></div>
-              <span style={{fontSize:18, fontWeight:700}}>{v}/3</span>
-            </div>
-            <div style={{padding:"20px"}}>
-              {(showHas ? t.strong : t.weak).map((s,i) => (
-                <div key={i} style={{marginBottom:6}}>{showHas?"→":"–"} {s}</div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-
-      {tab==="develop" && (
-        <div>
-          {Object.entries(person.scores).map(([k,v]) => {
-            const t = VIRTUES[k];
-            return (
-              <div key={k} style={{marginBottom:20, background:"#fff", border:`2px solid ${t.border}`, borderRadius:14, overflow:"hidden"}}>
-                <div style={{background:t.bg, padding:"14px 20px", display:"flex", alignItems:"center", gap:12}}>
-                  <span style={{fontSize:28}}>{t.icon}</span>
-                  <div style={{fontSize:18, fontWeight:800, color:t.color, flex:1}}>{t.label}</div>
-                  <span style={{fontSize:14, color:C.textMuted, background:"#fff", padding:"4px 10px", borderRadius:20, fontWeight:700}}>{SCORE_LABELS[v]}</span>
-                </div>
-                <div style={{padding:"16px 20px"}}>
-                  {t.develop.map((step,i) => (
-                    <div key={i} style={{display:"flex", gap:12, marginBottom:10, alignItems:"flex-start"}}>
-                      <span style={{background:C.orange, color:"#fff", borderRadius:"50%", width:22, height:22, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, flexShrink:0}}>{i+1}</span>
-                      <span style={{fontSize:14, color:C.text, lineHeight:1.5}}>{step}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {tab==="notes" && (
-        <div style={{background:"#fff", border:`1px solid ${C.border}`, borderRadius:12, padding:24, minHeight:200, whiteSpace:"pre-wrap", fontSize:15}}>
-          {person.notes || "No notes added yet."}
-        </div>
-      )}
-    </Modal>
-  );
-}
-
-const BLANK_ATHLETE = { id:"", name:"", role:"", notes:"", scores:{L:1,P:1,S:1,G:1,H:1,Gr:1,J:1}, lastUpdated: null };
-
-// ─── MAIN APP ─────────────────────────────────────────────────────────────────
-function App() {
-  const [tab, setTab] = useState("athletes");
-  const [athletes, setAthletes] = useState(() => load("awaygame_athletes_v1", []));
-  const [editing, setEditing] = useState(null);
-  const [viewing, setViewing] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
-
-  function saveAthlete(p) {
-    const updated = {...p, id: p.id || uid(), lastUpdated: Date.now()};
-    const next = p.id ? athletes.map(x => x.id === p.id ? updated : x) : [...athletes, updated];
-    setAthletes(next);
-    save("awaygame_athletes_v1", next);
-    setEditing(null);
+  if (sc.gasVsElectric) {
+    h += `<div class="section-label">Gas vs. Electric — Identify on 360° Size-Up</div><div class="two-col">`;
+    h += `<div class="info-block"><h4>🔥 Signs of Gas Heat</h4><ul>${sc.gasVsElectric.gas.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+    h += `<div class="info-block"><h4>⚡ Signs of Electric Heat</h4><ul>${sc.gasVsElectric.electric.map(i=>`<li>${i}</li>`).join('')}</ul></div></div>`;
   }
 
-  function deleteAthlete(id) {
-    const next = athletes.filter(a => a.id !== id);
-    setAthletes(next);
-    save("awaygame_athletes_v1", next);
-    setDeleteConfirm(null);
-    if (viewing && viewing.id === id) setViewing(null);
+  if (sc.appliances && sc.appliances.length) {
+    h += `<div class="section-label">Gas Appliances to Identify During Size-Up</div><div class="info-block mb-16"><ul>${sc.appliances.map(a=>`<li>${a}</li>`).join('')}</ul></div>`;
   }
 
-  const teamStats = calculateTeamProgress(athletes);
+  h += `<div class="section-label">Action Checklist — In Order</div><div class="info-block mb-16"><ul>`;
+  sc.checklist.forEach(item => { h += `<li><span class="tag ${item.tag}">${item.tag==='red'?'NOW':item.tag==='amber'?'NEXT':'THEN'}</span>${item.text}</li>`; });
+  h += '</ul></div>';
 
-  return (
-    <div style={{minHeight:"100vh", background:"#f8f9fa"}}>
-      {/* HEADER */}
-      <div style={{background:"#fff", borderBottom:"4px solid #ff8c00", padding:"0 24px", height:76, display:"flex", alignItems:"center", justifyContent:"space-between", boxShadow:"0 3px 12px rgba(0,0,0,0.1)"}}>
-        <div>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif", fontWeight:900, fontSize:32, letterSpacing:1.5, color:C.orange}}>AWAY GAME</div>
-          <div style={{fontSize:13, color:"#555"}}>Christian Parent’s Playbook</div>
-        </div>
-        <div style={{display:"flex", gap:8}}>
-          <button onClick={()=>setTab("athletes")} style={{padding:"10px 22px", borderRadius:10, background:tab==="athletes"?C.orange:"#fff", color:tab==="athletes"?"#fff":"#333", fontWeight:700, border:"2px solid #ff8c00"}}>👥 My Athletes</button>
-          <button onClick={()=>setTab("playbook")} style={{padding:"10px 22px", borderRadius:10, background:tab==="playbook"?C.orange:"#fff", color:tab==="playbook"?"#fff":"#333", fontWeight:700, border:"2px solid #ff8c00"}}>📖 The Playbook</button>
-        </div>
-      </div>
+  h += `<div class="section-label">Decision Branches — IF / THEN</div><div class="decision-tree mb-16"><div class="dt-header">Condition → Action</div>`;
+  sc.decisions.forEach(d => { h += `<div class="dt-row"><div class="dt-cond">🔺 ${d.cond}</div><div class="dt-action">→ ${d.action}</div></div>`; });
+  h += '</div>';
 
-      {tab === "athletes" && (
-        <div style={{padding:24}}>
-          {/* TEAM PROGRESS DASHBOARD */}
-          {athletes.length > 0 && (
-            <div className="team-card" style={{marginBottom:32}}>
-              <div style={{fontSize:20, fontWeight:800, marginBottom:16, color:C.orange}}>Team Progress Overview</div>
-              <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px, 1fr))", gap:20}}>
-                <div>
-                  <div style={{fontSize:13, color:C.textMuted}}>Team Average Score</div>
-                  <div style={{fontSize:32, fontWeight:800, color:C.orange}}>{teamStats.avgScore}</div>
-                  <div style={{fontSize:13}}>out of 3.0</div>
-                </div>
-                <div>
-                  <div style={{fontSize:13, color:C.textMuted}}>Strong Virtues</div>
-                  <div style={{fontSize:32, fontWeight:800, color: teamStats.strongPercent > 70 ? C.green : C.orange}}>{teamStats.strongPercent}%</div>
-                </div>
-                <div>
-                  <div style={{fontSize:13, color:C.textMuted}}>Athletes Tracked</div>
-                  <div style={{fontSize:32, fontWeight:800}}>{teamStats.totalAthletes}</div>
-                </div>
-              </div>
-            </div>
-          )}
+  h += `<div class="section-label">What NOT To Do</div><div class="alert-card danger"><ul style="padding-left:18px;margin:0;">`;
+  sc.dont.forEach(d => { h += `<li style="margin-bottom:7px;">${d}</li>`; });
+  h += '</ul></div>';
 
-          <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:28}}>
-            <h1 style={{fontSize:28, fontWeight:800}}>My Athletes</h1>
-            <button onClick={()=>setEditing(BLANK_ATHLETE)} style={{background:C.orange, color:"#fff", border:"none", padding:"12px 28px", borderRadius:12, fontWeight:700}}>＋ Add Athlete</button>
-          </div>
-
-          {athletes.length === 0 ? (
-            <div style={{textAlign:"center", padding:"120px 20px", color:"#666"}}>
-              <div style={{fontSize:80}}>⚽️🏀🏈</div>
-              <div style={{fontSize:24, margin:"20px 0"}}>Start building your team’s character</div>
-              <button onClick={()=>setEditing(BLANK_ATHLETE)} style={{background:C.orange, color:"#fff", padding:"14px 36px", borderRadius:12, fontSize:17, fontWeight:700}}>Add Your First Athlete</button>
-            </div>
-          ) : (
-            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(310px, 1fr))", gap:20}}>
-              {athletes.map(p => {
-                const combo = getCombo(p.scores);
-                return (
-                  <div key={p.id} style={{background:"#fff", border:`1px solid ${C.border}`, borderRadius:16, padding:22, boxShadow:"0 6px 20px rgba(0,0,0,0.07)", position:"relative"}}>
-                    <button 
-                      onClick={(e)=>{e.stopPropagation(); setDeleteConfirm(p);}} 
-                      className="delete-btn" 
-                      style={{position:"absolute", top:12, right:12}}
-                    >
-                      🗑
-                    </button>
-                    
-                    <div onClick={()=>setViewing(p)} style={{cursor:"pointer"}}>
-                      <div style={{fontSize:22, fontWeight:800, marginBottom:8}}>{p.name}</div>
-                      {p.role && <div style={{color:C.textSub, marginBottom:12}}>{p.role}</div>}
-                      
-                      <div style={{display:"flex", gap:8, flexWrap:"wrap", marginBottom:16}}>
-                        {Object.entries(p.scores).map(([k,v]) => (
-                          <div key={k} style={{background:VIRTUES[k].bg, padding:"6px 10px", borderRadius:8, fontSize:14}}>{VIRTUES[k].icon} {v}</div>
-                        ))}
-                      </div>
-
-                      <div style={{marginBottom:12}}>
-                        <div className="progress-bar">
-                          <div className="progress-fill" style={{width: `${combo.progress}%`, background: combo.progress > 80 ? "linear-gradient(90deg,#00b36b,#34d399)" : combo.progress > 50 ? "linear-gradient(90deg,#ff8c00,#ffaa00)" : "#dc3545"}} />
-                        </div>
-                      </div>
-
-                      <div style={{fontSize:13, color:C.textMuted}}>Last updated: {p.lastUpdated ? new Date(p.lastUpdated).toLocaleDateString() : "Never"}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {tab === "playbook" && (
-        <div style={{padding:24, maxWidth:820, margin:"0 auto"}}>
-          <h2 style={{color:C.orange, marginBottom:8}}>The Seven Virtues</h2>
-          <p style={{color:C.textSub, marginBottom:32}}>Fruit of the Spirit applied to youth sports.</p>
-          {Object.values(VIRTUES).map(t => (
-            <div key={t.key} style={{marginBottom:24, background:"#fff", border:`1px solid ${t.border}`, borderRadius:16, padding:24}}>
-              <div style={{display:"flex", alignItems:"center", gap:16}}>
-                <span style={{fontSize:48}}>{t.icon}</span>
-                <div>
-                  <div style={{fontSize:22, fontWeight:800, color:t.color}}>{t.label}</div>
-                  <div style={{color:C.textSub}}>"{t.tagline}"</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {editing && <EditModal person={editing} onSave={saveAthlete} onClose={()=>setEditing(null)} />}
-      {viewing && <PersonDetail person={viewing} onClose={()=>setViewing(null)} onEdit={p=>{setViewing(null); setEditing(p);}} />}
-      {deleteConfirm && <ConfirmDelete name={deleteConfirm.name} onConfirm={()=>deleteAthlete(deleteConfirm.id)} onCancel={()=>setDeleteConfirm(null)} />}
-    </div>
-  );
+  document.getElementById('sc-content').innerHTML = h;
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(React.createElement(App));
+function renderRuns(n) {
+  const key = SCENARIOS[n].id;
+  const runs = runData[key] || [];
+  const el = document.getElementById('runs-list');
+  if (!runs.length) { el.innerHTML = '<span class="no-runs">No runs logged yet. Use the + Log Run button after practicing this scenario.</span>'; return; }
+  el.innerHTML = runs.map((r, i) => `
+    <div class="run-chip">
+      <span>Run ${i+1}</span>
+      <span class="score">${r.score}/5 ★</span>
+      <span class="date">${r.date}</span>
+    </div>
+  `).join('');
+}
+
+function logRun() {
+  const sc = prompt('Rate this run 1–5 (5 = excellent):', '4');
+  if (!sc || isNaN(sc)) return;
+  const score = Math.min(5, Math.max(1, parseInt(sc)));
+  const key = SCENARIOS[currentScenario].id;
+  if (!runData[key]) runData[key] = [];
+  runData[key].push({ score, date: new Date().toLocaleDateString() });
+  localStorage.setItem('frt-runs', JSON.stringify(runData));
+  document.getElementById('scbtn-' + currentScenario).classList.add('has-runs');
+  renderRuns(currentScenario);
+  updateTotal();
+}
+
+function updateTotal() {
+  let t = 0;
+  Object.values(runData).forEach(a => t += a.length);
+  document.getElementById('total-run-count').textContent = t;
+}
+
+// QUIZ
+function startQuiz() {
+  quizQs = [...QUIZ_QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 10);
+  currentQuizIndex = 0;
+  quizScore = 0;
+  document.getElementById('quiz-active').classList.remove('hidden');
+  document.getElementById('quiz-score-screen').classList.add('hidden');
+  document.getElementById('quiz-score-live').textContent = '0';
+  renderStars(0, 10);
+  loadQ();
+}
+
+function renderStars(score, total) {
+  const pct = score / total;
+  const s = pct >= 0.9 ? 5 : pct >= 0.7 ? 4 : pct >= 0.5 ? 3 : pct >= 0.3 ? 2 : 1;
+  document.getElementById('quiz-stars-row').innerHTML = [1,2,3,4,5].map(x => `<span class="star ${x<=s?'lit':''}">&starf;</span>`).join('');
+}
+
+function loadQ() {
+  const q = quizQs[currentQuizIndex];
+  const total = quizQs.length;
+  document.getElementById('q-num').textContent = currentQuizIndex + 1;
+  document.getElementById('q-total').textContent = total;
+  document.getElementById('quiz-bar').style.width = ((currentQuizIndex / total) * 100) + '%';
+  document.getElementById('quiz-cat').textContent = q.cat;
+  document.getElementById('quiz-q-text').textContent = q.q;
+  document.getElementById('quiz-explanation').style.display = 'none';
+  document.getElementById('quiz-next-btn').classList.add('hidden');
+  quizAnswered = false;
+  const letters = ['A','B','C','D'];
+  document.getElementById('quiz-options').innerHTML = q.opts.map((opt, i) => `
+    <button class="quiz-opt" onclick="answerQ(${i})" id="qo${i}">
+      <span class="opt-letter">${letters[i]}</span>${opt}
+    </button>
+  `).join('');
+}
+
+function answerQ(chosen) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const q = quizQs[currentQuizIndex];
+  if (chosen === q.correct) quizScore++;
+  document.querySelectorAll('.quiz-opt').forEach((el, i) => {
+    el.classList.add('disabled');
+    if (i === q.correct) el.classList.add('correct');
+    else if (i === chosen && chosen !== q.correct) el.classList.add('wrong');
+  });
+  const ex = document.getElementById('quiz-explanation');
+  ex.innerHTML = `<strong>${chosen === q.correct ? '✅ Correct!' : '❌ Not quite.'}</strong>${q.explain}`;
+  ex.style.display = 'block';
+  document.getElementById('quiz-score-live').textContent = quizScore;
+  renderStars(quizScore, quizQs.length);
+  document.getElementById('quiz-next-btn').classList.remove('hidden');
+}
+
+function nextQuizQ() {
+  currentQuizIndex++;
+  if (currentQuizIndex >= quizQs.length) showScore();
+  else loadQ();
+}
+
+function showScore() {
+  document.getElementById('quiz-active').classList.add('hidden');
+  const screen = document.getElementById('quiz-score-screen');
+  screen.classList.remove('hidden');
+  const pct = quizScore / quizQs.length;
+  const pass = pct >= 0.7;
+  const ring = document.getElementById('score-ring');
+  ring.textContent = quizScore + '/' + quizQs.length;
+  ring.className = 'score-ring ' + (pass ? 'pass' : 'fail');
+  document.getElementById('score-label').textContent = pass ? '✅ Passing Score' : '❌ Keep Studying';
+  document.getElementById('score-msg').textContent = pct >= 0.9 ? 'Outstanding. You know this material cold.' : pct >= 0.7 ? 'Solid. Review the questions you missed.' : 'More review needed. Go through the Learn tabs and try again.';
+  if (!runData['quiz']) runData['quiz'] = [];
+  runData['quiz'].push({ score: Math.round(pct * 5), date: new Date().toLocaleDateString() });
+  localStorage.setItem('frt-runs', JSON.stringify(runData));
+  updateTotal();
+}
+
+// SIM
+function nextSim() {
+  simAnswered = false;
+  currentSim = SIM_SCENARIOS[Math.floor(Math.random() * SIM_SCENARIOS.length)];
+  document.getElementById('sim-incident-type').textContent = currentSim.type;
+  document.getElementById('sim-dispatch').textContent = currentSim.dispatch;
+  document.getElementById('sim-vars').innerHTML = currentSim.vars.map(v => `<div class="sim-var">${v}</div>`).join('');
+  document.getElementById('sim-prompt-text').textContent = currentSim.prompt;
+  document.getElementById('sim-feedback-text').style.display = 'none';
+  document.getElementById('sim-next-btn').classList.add('hidden');
+  const shuffled = [...currentSim.choices].sort(() => Math.random() - 0.5);
+  document.getElementById('sim-choices').innerHTML = shuffled.map((c, i) => `
+    <button class="sim-choice" onclick="answerSim('${c.rating}', this, '${c.text.replace(/'/g,"\\'")}')">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;flex-shrink:0;font-weight:800;">${i+1}</span>
+      ${c.text}
+    </button>
+  `).join('');
+}
+
+function answerSim(rating, clickedEl, clickedText) {
+  if (simAnswered) return;
+  simAnswered = true;
+  document.querySelectorAll('.sim-choice').forEach(el => {
+    const elText = el.textContent.trim().replace(/^[1-4]\s*/,'');
+    const match = currentSim.choices.find(c => el.textContent.includes(c.text));
+    if (match) { el.classList.add(match.rating); el.classList.add('locked'); }
+  });
+  const fb = document.getElementById('sim-feedback-text');
+  let msg = rating === 'best' ? currentSim.feedback.best : rating === 'ok' && currentSim.feedback.ok ? currentSim.feedback.ok : currentSim.feedback.poor;
+  const color = rating === 'best' ? '#81c784' : rating === 'ok' ? '#ffcc80' : '#ef9a9a';
+  fb.innerHTML = `<p style="font-weight:700;color:${color};margin-bottom:8px;">${msg}</p><div class="rationale"><strong style="color:var(--text-dim);">Rationale:</strong> ${currentSim.rationale}</div>`;
+  fb.style.display = 'block';
+  document.getElementById('sim-next-btn').classList.remove('hidden');
+  if (!runData['sim']) runData['sim'] = [];
+  runData['sim'].push({ score: rating === 'best' ? 5 : rating === 'ok' ? 3 : 1, date: new Date().toLocaleDateString() });
+  localStorage.setItem('frt-runs', JSON.stringify(runData));
+  updateTotal();
+}
+
+// SOG
+function addSOG() {
+  const cat = document.getElementById('sog-cat').value;
+  const title = document.getElementById('sog-title').value.trim();
+  const body = document.getElementById('sog-body').value.trim();
+  if (!title || !body) { alert('Please fill in both title and note content.'); return; }
+  sogData.push({ cat, title, body, id: Date.now() });
+  localStorage.setItem('frt-sog', JSON.stringify(sogData));
+  document.getElementById('sog-title').value = '';
+  document.getElementById('sog-body').value = '';
+  renderSOG();
+}
+
+function deleteSOG(id) {
+  if (!confirm('Delete this note?')) return;
+  sogData = sogData.filter(s => s.id !== id);
+  localStorage.setItem('frt-sog', JSON.stringify(sogData));
+  renderSOG();
+}
+
+function renderSOG() {
+  const el = document.getElementById('sog-list');
+  if (!sogData.length) { el.innerHTML = '<p style="color:var(--text-dim);font-size:0.9rem;font-style:italic;padding:10px 0;">No notes saved yet. Add your department\'s SOGs above.</p>'; return; }
+  el.innerHTML = sogData.map(s => `
+    <div class="sog-card">
+      <span class="sog-badge">${s.cat}</span>
+      <div class="sog-content"><h4>${s.title}</h4><p>${s.body}</p></div>
+      <button class="sog-del" onclick="deleteSOG(${s.id})" title="Delete">✕</button>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+// PANEL DATA
+// ══════════════════════════════════════════
+const PANELS = [
+  {
+    id: 'honeywell-vista',
+    brand: 'Honeywell',
+    name: 'Vista Series (Vista-15P / 20P / 128BPT)',
+    sub: 'Very common in commercial and multi-family residential',
+    badgeColor: '#1565c0',
+    badgeText: 'Honeywell',
+    commonLocations: ['Multi-tenant commercial', 'Hotels', 'Apartment buildings', 'Schools'],
+    commonModels: ['Vista-15P', 'Vista-20P', 'Vista-128BPT', 'Vista-250BPT'],
+    appearance: 'Grey or beige plastic enclosure, numeric keypad with alphanumeric LCD display. Often has a separate annunciator/keypad at entry.',
+    silenceSteps: [
+      { text: 'Locate keypad — usually at main entry or lobby', color: '' },
+      { text: 'Enter master code (building staff must provide — typically 4–6 digits)', color: '' },
+      { text: 'Press [OFF] or [#] + [OFF] — this silences bells/horns but leaves alarm in memory', color: 'amber' },
+      { text: 'Verify "Alarm Silenced" or "Disarmed" appears on display', color: 'amber' },
+    ],
+    resetSteps: [
+      { text: 'Confirm fire area has been investigated and source is identified/corrected', color: '' },
+      { text: 'Enter master code on keypad', color: '' },
+      { text: 'Press [OFF] twice — this clears the alarm memory', color: 'amber' },
+      { text: 'Verify display returns to "Ready" or "Armed" status (building normal)', color: 'green' },
+      { text: 'Some models require: Code + [#] to fully reset — try if double-[OFF] does not clear', color: 'amber' },
+    ],
+    keyButtons: [
+      { icon: '🔕', label: '[OFF] or [#]', desc: 'Silence and disarm' },
+      { icon: '🔑', label: 'Master Code', desc: 'Required before any action' },
+      { icon: '⚠️', label: '[*] + [2]', desc: 'View fault/alarm zones on some models' },
+      { icon: '🔔', label: '[*] + [7]', desc: 'Test mode — use with caution' },
+    ],
+    zoneInfo: 'Zones shown as number codes on display (e.g., "ZONE 04 ALARM"). Zone list is typically posted inside the panel enclosure door or in a zone directory nearby.',
+    caution: 'Do NOT enter code repeatedly if you are unsure — some models will lockout after failed attempts. Building staff or monitoring company can provide the code.',
+    tip: 'Many Vista panels have a monitoring company connection. If you silence the alarm, dispatch may receive an "alarm restored" signal — notify your communication center.',
+  },
+  {
+    id: 'simplex-4100',
+    brand: 'Simplex',
+    name: 'Simplex 4100ES / 4010ES',
+    sub: 'Large commercial — hospitals, universities, high-rises',
+    badgeColor: '#b71c1c',
+    badgeText: 'Simplex',
+    commonLocations: ['Hospitals', 'Universities', 'Large commercial', 'High-rises', 'Government buildings'],
+    commonModels: ['4100ES', '4010ES', '4100U', '4005'],
+    appearance: 'Large metallic panel, often floor-to-ceiling in fire control rooms. Touch-screen or large LCD with dedicated function keys. Red cabinet.',
+    silenceSteps: [
+      { text: 'Locate the main panel — usually in a dedicated fire control room or lobby annunciator cabinet', color: '' },
+      { text: 'Turn the key switch to the "Command" or "Operations" position (key required)', color: '' },
+      { text: 'Press [ALARM SILENCE] or [SILENCE] button — large dedicated button, often yellow', color: 'amber' },
+      { text: 'Audible devices will stop; visual signals (strobes) may continue per building code', color: 'amber' },
+    ],
+    resetSteps: [
+      { text: 'Confirm all areas investigated, source corrected, sprinklers off (if activated)', color: '' },
+      { text: 'Key must remain in Command/Operations position', color: '' },
+      { text: 'Press [RESET] or [SYSTEM RESET] — usually a dedicated button, red or gray', color: 'amber' },
+      { text: 'System will perform self-test (takes 30–90 seconds on larger systems)', color: '' },
+      { text: 'Display should show "NORMAL" or all green when reset complete', color: 'green' },
+      { text: 'Turn key back to normal position, log action', color: '' },
+    ],
+    keyButtons: [
+      { icon: '🔑', label: 'Key Switch', desc: 'Must be turned to Command before operations' },
+      { icon: '🔕', label: '[ALARM SILENCE]', desc: 'Yellow button — silences audible alarms' },
+      { icon: '🔄', label: '[SYSTEM RESET]', desc: 'Clears alarm memory after conditions corrected' },
+      { icon: '📋', label: '[ACKNOWLEDGE]', desc: 'Acknowledge new alarms on the display' },
+      { icon: '🚒', label: '[DRILL]', desc: 'Fire drill mode — do NOT press accidentally' },
+    ],
+    zoneInfo: 'Touchscreen or large LCD shows specific device address (e.g., "L1-D007 SMOKE ALARM — FLOOR 3 CORRIDOR"). Building fire control room typically has floor plan maps with device locations.',
+    caution: 'Simplex 4100ES panels in large occupancies are complex. If in doubt about a function, leave the panel in silenced state and consult the building fire safety director or monitoring company before resetting.',
+    tip: 'Many hospitals and large facilities have a designated Fire Safety Director or building engineer who is trained on this panel. Coordinate with them — do not reset without their confirmation on large systems.',
+  },
+  {
+    id: 'notifier-nfs2',
+    brand: 'Notifier',
+    name: 'Notifier NFS2-3030 / AFP-200 / AFP-400',
+    sub: 'Common in commercial, industrial, and institutional',
+    badgeColor: '#4a148c',
+    badgeText: 'Notifier',
+    commonLocations: ['Commercial buildings', 'Industrial facilities', 'Schools', 'Warehouses'],
+    commonModels: ['NFS2-3030', 'NFS-320', 'AFP-200', 'AFP-400', 'NFW-50'],
+    appearance: 'Black or dark grey panel with backlit LCD display, dedicated function keys across the bottom, and LED indicators (red alarm, yellow trouble, green normal).',
+    silenceSteps: [
+      { text: 'Insert key into panel (usually a standard fire panel key)', color: '' },
+      { text: 'Turn key to enable operations', color: '' },
+      { text: 'Press [SIGNAL SILENCE] button — silences horns and bells', color: 'amber' },
+      { text: 'Indicator light next to SILENCE will illuminate', color: '' },
+    ],
+    resetSteps: [
+      { text: 'Confirm fire area fully investigated, source corrected', color: '' },
+      { text: 'Ensure all triggered devices are no longer in alarm state (smoke cleared, manual pull reset)', color: '' },
+      { text: 'Press [RESET] button — panel will begin polling all devices', color: 'amber' },
+      { text: 'Wait for polling cycle to complete (30–120 seconds on large systems)', color: '' },
+      { text: 'If device still in alarm state, panel will re-alarm — do NOT force reset', color: 'amber' },
+      { text: 'Green "NORMAL" LED should illuminate when system is fully restored', color: 'green' },
+    ],
+    keyButtons: [
+      { icon: '🔕', label: '[SIGNAL SILENCE]', desc: 'Silences audible notification' },
+      { icon: '🔄', label: '[RESET]', desc: 'Resets system after conditions corrected' },
+      { icon: '📋', label: '[ACKNOWLEDGE]', desc: 'Silences local panel buzzer, logs operator action' },
+      { icon: '🔍', label: '[SCROLL]', desc: 'Navigate through alarm/trouble list on LCD' },
+      { icon: '📵', label: '[DISABLE]', desc: 'Disable individual zones/devices — requires authorization' },
+    ],
+    zoneInfo: 'LCD display shows zone number and device type. Notifier uses SLC (Signaling Line Circuit) addresses — e.g., "SLC 1 DEV 047 SMOKE." Zone maps are typically inside panel door or in the fire command room.',
+    caution: 'If the panel re-alarms immediately after reset, do NOT keep pressing reset. A device is still in alarm — return to investigation. Repeated forced resets can damage panel or mask an active fire.',
+    tip: 'Notifier AFP series panels can be programmed with custom messages per zone — the LCD text is one of the most informative displays you will find. Read it carefully before doing anything.',
+  },
+  {
+    id: 'edwards-est3',
+    brand: 'Edwards',
+    name: 'Edwards / EST3 / EST4 (Carrier Fire & Security)',
+    sub: 'Common in large commercial and high-rise applications',
+    badgeColor: '#e65100',
+    badgeText: 'Edwards / EST',
+    commonLocations: ['High-rises', 'Large commercial', 'Healthcare', 'Education'],
+    commonModels: ['EST3', 'EST4', 'E3 Series', 'QuickStart', 'GFP-2'],
+    appearance: 'Large modular panel — may span an entire wall in fire command rooms. EST3 has color touchscreen or large backlit display with row of dedicated function keys. Orange/red accents.',
+    silenceSteps: [
+      { text: 'Locate fire command center — usually lobby or dedicated room', color: '' },
+      { text: 'Key switch must be turned to "ON" or "COMMAND" mode', color: '' },
+      { text: 'Press [SILENCE] or [ALARM SILENCE] — silences notification appliances', color: 'amber' },
+      { text: 'Strobe lights may remain on per code requirements — this is normal', color: '' },
+    ],
+    resetSteps: [
+      { text: 'Fully investigate and confirm source is corrected', color: '' },
+      { text: 'Reset manual pull stations physically (require key or screwdriver to reset)', color: '' },
+      { text: 'Allow smoke detectors time to clear (ventilate area)', color: '' },
+      { text: 'Press [RESET] or [SYSTEM RESET]', color: 'amber' },
+      { text: 'System self-test takes 30–120 seconds; display shows progress', color: '' },
+      { text: 'Confirm all trouble/alarm indicators clear before returning key to normal', color: 'green' },
+    ],
+    keyButtons: [
+      { icon: '🔑', label: 'Key Switch', desc: 'Required for all operations' },
+      { icon: '🔕', label: '[SILENCE]', desc: 'Silences horns/speakers' },
+      { icon: '🔄', label: '[RESET]', desc: 'System reset after correction' },
+      { icon: '📢', label: '[DRILL]', desc: 'Initiates fire drill — confirm before pressing' },
+      { icon: '📵', label: '[DISABLE/ENABLE]', desc: 'Zone or device bypass — authorized use only' },
+    ],
+    zoneInfo: 'EST panels can display voice messages and zone-specific instructions. Floor maps and zone directories are typically maintained in the fire command room binder. EST3 in high-rises often integrates with elevators and HVAC.',
+    caution: 'EST3/EST4 in high-rises may have stairwell pressurization, elevator recall, and smoke control tied to the panel. Operating [RESET] restores these systems — confirm with building engineer before resetting in a large occupancy.',
+    tip: 'Many EST installations have an "Acknowledge" sequence for new alarms that silences the panel buzzer without silencing building-wide notification. Use [ACK] first to read all active alarms before silencing.',
+  },
+  {
+    id: 'bosch-radionics',
+    brand: 'Bosch',
+    name: 'Bosch / Radionics D9412 / FPD-7024',
+    sub: 'Common in commercial, light industrial, and mixed-use',
+    badgeColor: '#1b5e20',
+    badgeText: 'Bosch / Radionics',
+    commonLocations: ['Commercial buildings', 'Mixed-use', 'Light industrial', 'Retail'],
+    commonModels: ['D9412GV4', 'D7412GV4', 'FPD-7024', 'FPD-7024T', 'DS150i'],
+    appearance: 'Grey or beige plastic cabinet. Numeric keypad or alpha keypad with LCD display. Similar in appearance to Honeywell Vista. May have remote annunciator panel at entry.',
+    silenceSteps: [
+      { text: 'Go to main keypad (or annunciator if available)', color: '' },
+      { text: 'Enter user code when prompted (building staff must provide)', color: '' },
+      { text: 'Press [COMMAND] or function key labeled [SILENCE] on D series', color: 'amber' },
+      { text: 'On some models: enter code, then press [*] or [F] key to silence notification', color: 'amber' },
+    ],
+    resetSteps: [
+      { text: 'Investigate fully — confirm source corrected', color: '' },
+      { text: 'Enter user/master code', color: '' },
+      { text: 'Press [RESET] or hold [#] + code — specific to programming', color: 'amber' },
+      { text: 'Display should show "Normal" or all "Secure" when complete', color: 'green' },
+      { text: 'If alarm reactivates: a detector is still active — re-investigate before retrying', color: '' },
+    ],
+    keyButtons: [
+      { icon: '🔑', label: 'User Code', desc: 'Required — 4 to 6 digits, from building staff' },
+      { icon: '🔕', label: '[*] or [SILENCE]', desc: 'Silences notification appliances' },
+      { icon: '🔄', label: '[RESET] or [#]', desc: 'System reset — varies by model' },
+      { icon: '⚠️', label: '[STATUS]', desc: 'Displays active alarms and trouble conditions' },
+    ],
+    zoneInfo: 'Zone assignments shown as numbers on display (e.g., "Zone 12 Alarm"). Zone directory is typically inside panel door. Bosch systems are heavily customizable — zone labels may not be self-explanatory without the directory.',
+    caution: 'Bosch/Radionics panels have widely varying code sequences depending on how the installer programmed them. If standard sequences do not work, do not guess — contact the monitoring company.',
+    tip: 'If the keypad shows "FC" (Fire Command) mode or an "E" prefix, this indicates the panel has separate fire vs. security functions. Ensure you are operating the fire functions, not the security zone.',
+  },
+  {
+    id: 'silent-knight',
+    brand: 'Silent Knight',
+    name: 'Silent Knight 5208 / 6820 / IFP-2100',
+    sub: 'Common in mid-sized commercial and healthcare',
+    badgeColor: '#37474f',
+    badgeText: 'Silent Knight',
+    commonLocations: ['Healthcare clinics', 'Commercial', 'Schools', 'Mid-rise office'],
+    commonModels: ['5208', '6820EVS', 'IFP-2100', 'IFP-300', 'SK-5250'],
+    appearance: 'Grey or silver metallic cabinet. LED annunciator rows above a keypad or dedicated function buttons. Clean, industrial appearance. Often has built-in printer on larger models.',
+    silenceSteps: [
+      { text: 'Insert panel key (standard fire panel key)', color: '' },
+      { text: 'Turn to OPERATIONS position', color: '' },
+      { text: 'Press [ALARM SILENCE] — dedicated button, usually yellow or labeled clearly', color: 'amber' },
+      { text: 'Audible devices stop; LED indicators for active alarms remain lit', color: '' },
+    ],
+    resetSteps: [
+      { text: 'Investigate fully — confirm no active fire or alarm condition remains', color: '' },
+      { text: 'Physically reset any activated pull stations (require key or tool)', color: '' },
+      { text: 'Allow smoke detectors to clear — ventilate area if needed', color: '' },
+      { text: 'Press [SYSTEM RESET] button', color: 'amber' },
+      { text: 'Observe polling cycle — LEDs will flash as panel checks each zone', color: '' },
+      { text: 'When all green: system is normal. If any amber or red remains: trouble or alarm persists', color: 'green' },
+    ],
+    keyButtons: [
+      { icon: '🔑', label: 'Key Switch', desc: 'Required for all operations' },
+      { icon: '🔕', label: '[ALARM SILENCE]', desc: 'Silences audible notification' },
+      { icon: '🔄', label: '[SYSTEM RESET]', desc: 'Resets after conditions are corrected' },
+      { icon: '🖨️', label: '[PRINT]', desc: 'Prints event log — useful for documentation' },
+      { icon: '📵', label: '[DISABLE]', desc: 'Bypasses zones — authorized use only' },
+    ],
+    zoneInfo: 'LED annunciator rows show zone status. Zone directory inside cabinet door. IFP-2100 shows full text descriptions on LCD. Larger models log all events with timestamps — printout is useful documentation.',
+    caution: 'Silent Knight systems in healthcare may have two-stage alarm protocols (alert then evacuate). Confirm with facility staff before silencing — early stage alerts are designed to allow staff preparation before full evacuation.',
+    tip: 'The built-in printer on larger SK models is excellent for documenting alarm history. Consider printing the event log before reset — this gives you a timestamped record of all activations.',
+  },
+  {
+    id: 'gamewell-fx',
+    brand: 'Gamewell',
+    name: 'Gamewell-FCI E3 Series / 7100 Series',
+    sub: 'Common in older commercial and municipal buildings',
+    badgeColor: '#0d47a1',
+    badgeText: 'Gamewell',
+    commonLocations: ['Older commercial', 'Municipal buildings', 'Schools', 'Industrial'],
+    commonModels: ['E3 Series', '7100 Series', 'GCC-7100F', 'E-3 Series FACP'],
+    appearance: 'Red or grey metallic cabinet. Older models have manual switches and indicator lights without LCD. Newer E3 series has modern LCD display and dedicated function keys.',
+    silenceSteps: [
+      { text: 'For older models with switch panel: locate physical SILENCE toggle switch — flip to OFF/SILENCE', color: '' },
+      { text: 'For newer E3: key to operations mode, press [ALARM SILENCE]', color: 'amber' },
+      { text: 'Manual bell/horn circuits on older systems may require silencing at the electrical panel — confirm with building staff', color: 'amber' },
+    ],
+    resetSteps: [
+      { text: 'Investigate and confirm conditions corrected', color: '' },
+      { text: 'For switch-type panels: return SILENCE switch to ALARM position, then press RESET switch', color: 'amber' },
+      { text: 'For E3 series: key in operations mode, press [RESET]', color: 'amber' },
+      { text: 'Older Gamewell systems may require opening panel and pressing physical reset button inside', color: '' },
+      { text: 'Indicator lights should return to green/normal status', color: 'green' },
+    ],
+    keyButtons: [
+      { icon: '🔕', label: 'SILENCE Switch', desc: 'Older models: physical toggle switch' },
+      { icon: '🔄', label: 'RESET Switch', desc: 'Physical button or dedicated key function' },
+      { icon: '🔑', label: 'Key Switch', desc: 'E3 series requires key for operations' },
+      { icon: '💡', label: 'Zone Indicators', desc: 'LED lights by zone number — red = alarm, amber = trouble' },
+    ],
+    zoneInfo: 'Older Gamewell: zone indicators are LED lamps by number, with zone directory on a card inside the panel door. E3 series uses LCD with zone descriptions. Very old models may use card-type zone directories.',
+    caution: 'Very old Gamewell conventional systems may have zones wired directly — manual pull stations must be physically reset (turn key or use flathead screwdriver) at each device before panel will clear.',
+    tip: 'Gamewell systems are common in older schools and municipal buildings that have not been updated. If you encounter a panel you do not recognize, look for the nameplate inside the door — model number will guide you. Building custodian often knows this system well.',
+  },
+  {
+    id: 'mircom-fx2000',
+    brand: 'Mircom',
+    name: 'Mircom FX-2000 / FleX-Net',
+    sub: 'Common in Canadian-manufactured systems and newer commercial',
+    badgeColor: '#880e4f',
+    badgeText: 'Mircom',
+    commonLocations: ['Commercial buildings', 'Multi-family residential', 'Healthcare', 'Education'],
+    commonModels: ['FX-2000', 'FleX-Net', 'FX-2000(SG)', 'MR-2000S', 'LT-951'],
+    appearance: 'Grey or black cabinet with backlit LCD display and dedicated function keys. Clean modern appearance. LED indicators in a row across the top of the display area.',
+    silenceSteps: [
+      { text: 'Insert key and turn to OPERATIONS mode', color: '' },
+      { text: 'Press [SILENCE] button — usually marked clearly, may be color-coded yellow', color: 'amber' },
+      { text: 'Display will show "Alarm Silenced" state; LED indicators remain active', color: '' },
+    ],
+    resetSteps: [
+      { text: 'Confirm fire conditions corrected and all triggered devices have been reset', color: '' },
+      { text: 'Ventilate smoke-affected areas', color: '' },
+      { text: 'Press [RESET] — panel begins polling all devices', color: 'amber' },
+      { text: 'Green NORMAL LED illuminates when all devices report clear', color: 'green' },
+      { text: 'If a zone reactivates: return to investigation — do not force reset', color: '' },
+    ],
+    keyButtons: [
+      { icon: '🔑', label: 'Key Switch', desc: 'Required for operations' },
+      { icon: '🔕', label: '[SILENCE]', desc: 'Silences horns and notification' },
+      { icon: '🔄', label: '[RESET]', desc: 'System reset after correction' },
+      { icon: '📋', label: '[ACKNOWLEDGE]', desc: 'Acknowledge and silence panel buzzer' },
+      { icon: '📵', label: '[BYPASS]', desc: 'Zone bypass — requires authorization' },
+    ],
+    zoneInfo: 'LCD shows zone number, device type, and location. Zone map and device directory are typically inside panel door. FleX-Net systems may be networked — alarm may have been triggered by a remote panel in another building section.',
+    caution: 'Mircom FleX-Net systems can be multi-building networked. An alarm at one node may originate from a different building. Confirm the physical location of the alarm on the display before committing to an investigation path.',
+    tip: 'The [ACKNOWLEDGE] button silences the local panel buzzer only — not the building-wide notification. This is the first button to press on arrival so you can read the display without the buzzer interfering.',
+  },
+  {
+    id: 'conventional-generic',
+    brand: 'General',
+    name: 'Conventional Zone Panels (Generic / Unknown Brand)',
+    sub: 'What to do when you cannot identify the panel brand',
+    badgeColor: '#4e342e',
+    badgeText: 'Generic',
+    commonLocations: ['Older buildings', 'Small commercial', 'Residential', 'Panels with worn labels'],
+    commonModels: ['Any unidentified conventional panel'],
+    appearance: 'Varies widely. Look for: zone indicator lights (red = alarm, amber = trouble, green = normal), a keypad or toggle switches, and a nameplate inside the door.',
+    silenceSteps: [
+      { text: 'Look for the most prominent button labeled SILENCE, ACK, or showing a bell with a line through it', color: '' },
+      { text: 'Check for a key switch — many panels require key to be inserted before any button works', color: 'amber' },
+      { text: 'If no keypad: look for a SILENCE toggle switch or push button', color: '' },
+      { text: 'If nothing works: contact the monitoring company (number usually posted on panel door)', color: 'amber' },
+    ],
+    resetSteps: [
+      { text: 'Confirm investigation complete and conditions corrected', color: '' },
+      { text: 'Look for [RESET] button — usually near SILENCE, often red or grey', color: '' },
+      { text: 'If code required: building staff or monitoring company must provide', color: 'amber' },
+      { text: 'On very old systems: there may be a physical reset button inside the cabinet (open door)', color: '' },
+      { text: 'Manual pull stations almost always require a key or screwdriver to reset at the device before panel will clear', color: 'amber' },
+      { text: 'If panel will not reset: leave in silenced state, document, and notify monitoring company', color: 'green' },
+    ],
+    keyButtons: [
+      { icon: '🔕', label: 'SILENCE / ACK', desc: 'Most prominent button — stops audible alarm' },
+      { icon: '🔄', label: 'RESET', desc: 'Clears alarm memory after conditions corrected' },
+      { icon: '🔑', label: 'Key Switch', desc: 'Insert before operating any buttons if present' },
+      { icon: '📞', label: 'Monitoring Number', desc: 'Posted on panel door — call when uncertain' },
+    ],
+    zoneInfo: 'Conventional panels: each zone light represents a circuit. Red light = that zone is in alarm. Zone directory card is almost always inside the panel door — read it to identify the physical location of the alarm.',
+    caution: 'If you do not recognize a panel and cannot determine how to operate it safely, DO NOT experiment. Silence if possible, document the alarm zone, and call the monitoring company. Wrong operations can disable protection or cause false "all clear."',
+    tip: 'Universal rule across all panels: ACKNOWLEDGE silences the local buzzer → SILENCE stops building-wide notification → RESET clears the system. This sequence works on 90% of panels regardless of brand.',
+  },
+];
+
+// PANEL FUNCTIONS
+let currentPanelFilter = 'all';
+
+function filterPanels(brand) {
+  currentPanelFilter = brand;
+  document.querySelectorAll('.panel-filter-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim().replace('Edwards / EST','Edwards') === brand || (brand === 'all' && b.textContent.trim() === 'All Panels'));
+  });
+  renderPanels();
+}
+
+function renderPanels() {
+  const filtered = currentPanelFilter === 'all' ? PANELS : PANELS.filter(p => p.brand === currentPanelFilter || (currentPanelFilter === 'Edwards' && p.brand === 'Edwards'));
+  const el = document.getElementById('panels-list');
+  el.innerHTML = filtered.map((p, idx) => buildAccordion(p, idx)).join('');
+}
+
+function buildAccordion(p, idx) {
+  const aid = 'acc-' + p.id;
+  const silenceHTML = p.silenceSteps.map((s, i) => `
+    <li><span class="step-num ${s.color}">${i+1}</span><span>${s.text}</span></li>
+  `).join('');
+  const resetHTML = p.resetSteps.map((s, i) => `
+    <li><span class="step-num ${s.color}">${i+1}</span><span>${s.text}</span></li>
+  `).join('');
+  const keyHTML = p.keyButtons.map(k => `
+    <div class="panel-info-cell">
+      <div class="cell-label">${k.icon} ${k.label}</div>
+      <div class="cell-value">${k.desc}</div>
+    </div>
+  `).join('');
+  const locHTML = p.commonLocations.map(l => `<span class="acc-tag">${l}</span>`).join('');
+  const modelHTML = p.commonModels.map(m => `<span class="key-chip"><span class="kc-icon">📋</span>${m}</span>`).join('');
+
+  return `
+    <div class="accordion" id="${aid}">
+      <button class="accordion-header" onclick="toggleAcc('${aid}')">
+        <span class="acc-brand-badge" style="background:${p.badgeColor};color:#fff;">${p.badgeText}</span>
+        <div class="acc-title-block">
+          <div class="panel-name">${p.name}</div>
+          <div class="panel-sub">${p.sub}</div>
+        </div>
+        <div class="acc-meta" style="display:none;" id="meta-${aid}"></div>
+        <span class="acc-chevron">▼</span>
+      </button>
+      <div class="accordion-body" id="body-${aid}">
+        <div class="panel-section">
+          <div class="panel-section-title">📍 Where You'll Find It</div>
+          <div style="margin-bottom:10px;">${locHTML}</div>
+          <div class="panel-section-title" style="margin-top:14px;">📋 Common Models</div>
+          <div>${modelHTML}</div>
+          <div style="margin-top:12px;font-size:0.88rem;color:#aaa;line-height:1.5;"><strong style="color:var(--text-dim);">Appearance:</strong> ${p.appearance}</div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">🔕 How to Silence</div>
+          <ol class="step-list">${silenceHTML}</ol>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">🔄 How to Reset</div>
+          <ol class="step-list">${resetHTML}</ol>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">🎛️ Key Controls</div>
+          <div class="panel-grid">${keyHTML}</div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">📍 Finding the Zone</div>
+          <div style="font-size:0.92rem;color:#ccc;line-height:1.6;">${p.zoneInfo}</div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">⚠️ Cautions & Notes</div>
+          <div class="caution-bar">⚠️ ${p.caution}</div>
+          <div class="tip-bar">💡 ${p.tip}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleAcc(id) {
+  const header = document.querySelector(`#${id} .accordion-header`);
+  const body = document.getElementById('body-' + id);
+  const isOpen = header.classList.contains('open');
+  header.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+}
+
+// INIT
+window.onload = function() {
+  ['learn','quiz','sim','sog','panels'].forEach(m => document.getElementById('mode-' + m).style.display = 'none');
+  document.getElementById('mode-learn').style.display = 'block';
+  setScenario(0);
+  updateTotal();
+  SCENARIOS.forEach((sc, i) => {
+    if ((runData[sc.id] || []).length > 0) document.getElementById('scbtn-' + i).classList.add('has-runs');
+  });
+};
 </script>
 </body>
 </html>
